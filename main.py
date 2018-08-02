@@ -73,6 +73,8 @@ def main():
     print("3. ASSIGN NODE SRRGS")
     print("4. UNASSIGN LINK SRRGS")
     print("5. ASSIGN LINK SRRGS")
+    print("6. UNASSIGN ADD/DROP SRRGS")
+    print("7. ASSIGN ADD/DROP SRRGS")
     print("")
 
     user_response = raw_input("Choose one from above (1, 2, 3 or 4): ")
@@ -85,6 +87,7 @@ def main():
         collectioncode.process_srrgs.parse_ssrgs()
         collectioncode.process_srrgs.processl1nodes(region=region_int,type="Node")
         collectioncode.process_srrgs.processl1links(region=region_int,type="Degree")
+        collectioncode.process_srrgs.processtopolinks(region=region_int, type="Add/Drop")
         print "Collection complete, please see files in jsonfiles directory for results."
     elif user_response == "2":
         collectioncode.process_srrgs.unassignl1node_srrgs(baseURL, epnmuser, epnmpassword)
@@ -101,6 +104,14 @@ def main():
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
         collectioncode.process_srrgs.generatel1link_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
+    elif user_response == "6":
+        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword)
+        # collectioncode.process_srrgs.unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword)
+    elif user_response == "7":
+        pool_name = raw_input("Enter name of SRRG pool: ")
+        pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
+        print "Pool FDN is: " + pool_fdn
+        collectioncode.process_srrgs.generatetopolink_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
     else:
         print("Invalid input")
         exit()

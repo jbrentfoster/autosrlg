@@ -3,6 +3,6 @@
 	<p:description>{description}</p:description>
 	<p:resource-pool-ref>{respool}</p:resource-pool-ref>
 	<p:resource-fdn-list>
-		<p:resource-fdn>{rsfdn}</p:resource-fdn>
+		{rsfdn}
 	</p:resource-fdn-list>
 </p:shared-risk-resource-group-config>

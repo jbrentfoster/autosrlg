@@ -7,7 +7,7 @@ import random
 
 
 def parse_ssrgs():
-    srrg_types = ["Conduit", "Node", "Degree", "Add / Drop", "Switch", "Link", "Card", "Future", "Central Office",
+    srrg_types = ["Conduit", "Node", "Degree", "Add/Drop", "Switch", "Link", "Card", "Future", "Central Office",
                   "Future", "Future", "Future", "Future", "Future", "Future", "Future"]
 
     with open("jsongets/SRRGs.json", 'rb') as f:
@@ -83,7 +83,7 @@ def generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool):
             usrlabel = v1['Name'] + "-" + str(random.randint(1,1001))
             description = "Automated by Python."
             respool = pool
-            rsfdn = v1['fdn']
+            rsfdn = "<p:resource-fdn>" + v1['fdn'] + "</p:resource-fdn>"
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
 
@@ -206,7 +206,7 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
             usrlabel = "Link SRRG - " + str(random.randint(1,10001))
             description = "Automated by Python."
             respool = pool
-            rsfdn = v1['fdn']
+            rsfdn = "<p:resource-fdn>"+v1['fdn']+"</p:resource-fdn>"
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
 def unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword):
@@ -240,6 +240,113 @@ def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword):
                 fdn = srrg
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
+def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword):
+    with open("jsonfiles/topolinks_db.json", 'rb') as f:
+        l1nodes = json.load(f)
+        f.close()
+
+    for k1, v1 in l1nodes.items():
+        logging.info("")
+        logging.info("Unassigning SRRGs for link: " + v1['fdn'])
+        if len(v1['srrgs']) == 0:
+            logging.info("Link has no SRRGs")
+        else:
+            for srrg in v1['srrgs']:
+                fdn = srrg
+                rsfdn = v1['fdn']
+                unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
+def processtopolinks(region,type):
+    with open("jsonfiles/topolinks_db.json", 'rb') as f:
+        topolinks = json.load(f)
+        f.close()
+
+    for k1, v1 in topolinks.items():
+        logging.info("")
+        logging.info("Matching topo link " + v1['fdn'])
+        matched_srrgs = getLinkSRRGs(v1['fdn'])
+        srrg_list = []
+        wrong_srrg_list = []
+        if len(matched_srrgs) > 0:
+            logging.info("Matched an SRRG...")
+            for srrg in matched_srrgs:
+                logging.info(srrg['srrg.fdn'])
+                logging.info("Region is: " + str(srrg['region-dec']))
+                logging.info("Type is: " + srrg['type-string'])
+                if srrg['region-dec'] == region and srrg['type-string'] == type:
+                    logging.info("Region & type matches, link db updated.")
+                    srrg_list.append(srrg['srrg.fdn'])
+                else:
+                    logging.info("Region and/or type doesn't match!")
+                    wrong_srrg_list.append(srrg['srrg.fdn'])
+        v1['srrgs'] = srrg_list
+        v1['srrgs-incorrect'] = wrong_srrg_list
+
+    with open("jsonfiles/topolinks_db.json", 'wb') as f:
+        f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        f.close()
+
+def generatetopolink_srrgs(baseURL, epnmuser, epnmpassword, pool):
+    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+        l1nodes = json.load(f)
+        f.close()
+
+    for k1, v1 in l1nodes.items():
+        logging.info("")
+        logging.info("Evaluating topolinks for node: " + v1['Name'])
+        if v1['Name'] == "NCS2K-Site2":
+            continue
+        fdn_a_list = []
+        fdn_b_list = []
+        with open("jsonfiles/topolinks_db.json", 'rb') as f:
+            topolinks = json.load(f)
+            f.close()
+            for key1, val1 in topolinks.items():
+                for node in val1['Nodes']:
+                    if node['node'] == v1['Name']:
+                        ctp = node['ctp'].split('-')[0] + "-" + node['ctp'].split('-')[1] + "-" + node['ctp'].split('-')[2]
+                        if ctp == "PSLINE-81-1":
+                            fdn_a_list.append({ctp: val1['fdn']})
+                        elif ctp == "PSLINE-81-2":
+                            fdn_b_list.append({ctp: val1['fdn']})
+
+        print "Topo links for PSLINE-81-1"
+        xml_fdn_list = ""
+        for fdn in fdn_a_list:
+            xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE-81-1']+ "</p:resource-fdn>" + "\n"
+        print xml_fdn_list
+        usrlabel = "Add/Drop Node " +v1['Name'] + "  PSLINE-81-1-" + str(random.randint(1, 10001))
+        description = "Automated by Python."
+        respool = pool
+        createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
+
+        raw_input("Press space bar to continue...")
+
+        print "Topo links for PSLINE-81-2"
+        xml_fdn_list = ""
+        for fdn in fdn_b_list:
+            xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE-81-2']+ "</p:resource-fdn>" + "\n"
+        print xml_fdn_list
+        usrlabel = "Add/Drop Node " +v1['Name'] + "  PSLINE-81-2-" + str(random.randint(1, 10001))
+        description = "Automated by Python."
+        respool = pool
+        createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
+
+        raw_input("Press space bar to continue...")
+
+        # if len(v1['srrgs']) > 0:
+        #     logging.info("Node already has SRRG: ")
+        #     logging.info(v1['srrgs'])
+        # elif len(v1['srrgs']) > 1:
+        #     logging.info("Node has more than one SRRG: ")
+        #     logging.info(v1['srrgs'])
+        # else:
+        #     usrlabel = v1['Name'] + "-" + str(random.randint(1,1001))
+        #     description = "Automated by Python."
+        #     respool = pool
+        #     rsfdn = v1['fdn']
+        #     createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
 def deleteSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
     with open("collectioncode/post-srrg.xml", 'r') as f:
@@ -299,6 +406,7 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
 
     uri = "/operations/v1/cisco-resource-activation:create-shared-risk-resource-group"
     newxmlbody = xmlbody.format(usrlabel=usrlabel, description=description, respool=respool, rsfdn=rsfdn)
+    print newxmlbody
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
     try:
@@ -310,7 +418,12 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
         logging.warn("Operation failed.")
         return
 
-    result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
-    fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
-    logging.info("EPNM generated SRRG: " + fdn)
-    logging.info("Result: " + result)
+    try:
+        result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
+        fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
+        logging.info("EPNM generated SRRG: " + fdn)
+        logging.info("Result: " + result)
+    except Exception as err:
+        logging.warn("Error parsing response")
+        logging.warn(xmlresponse)
+

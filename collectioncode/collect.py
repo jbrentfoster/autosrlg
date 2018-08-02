@@ -15,8 +15,8 @@ def runcollector(baseURL, epnmuser, epnmpassword):
     collectL1links_json(baseURL, epnmuser, epnmpassword)
     logging.info("Collecting SRRGs...")
     collectSRRGs_json(baseURL, epnmuser, epnmpassword)
-    # logging.info("Collecting Topological Links...")
-    # collectTopoLinks_json(baseURL, epnmuser, epnmpassword)
+    logging.info("Collecting Topological Links...")
+    collectTopoLinks_json(baseURL, epnmuser, epnmpassword)
 
 
 def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
@@ -195,6 +195,42 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
 
     with open("jsongets/topo-links.json", 'wb') as f:
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        f.close()
+
+    thejson = json.loads(jsonresponse)
+
+    topolinks = {}
+    i = 1
+    with open("jsonfiles/topolinks_db.json", 'wb') as f:
+        for link in thejson['com.response-message']['com.data']['topo.topological-link']:
+            fdn = link['topo.fdn']
+            logging.info("Processing topological link " + fdn)
+            nodes = []
+            endpointlist = link['topo.endpoint-list']['topo.endpoint']
+
+            if len(endpointlist) > 1:
+                for ep in endpointlist:
+                    endpoint = ep['topo.endpoint-ref']
+                    print "Endpoint is: " + endpoint
+                    node = endpoint.split('!')[1].split('=')[1]
+                    ctp = endpoint.split('!')[2].split('=')[2]
+                    # MD=CISCO_EPNM!ND=NCS4K-Site3!CTP=name=Optics0/5/0/11;lr=lr-optical-section
+                    entry = {'node': node, 'ctp': ctp}
+                    nodes.append(entry)
+                if len(nodes) > 1:
+                    topolinks['Link' + str(i)] = dict([('fdn', fdn)])
+                    topolinks['Link' + str(i)]['Nodes'] = nodes
+                i += 1
+            # try:
+            #     latitude = node['nd.latitude']
+            #     longitude = node['nd.longitude']
+            # except KeyError:
+            #     logging.error("Could not get longitude or latitidude for node " + nodeName + ".  Setting to 0.0 and 0.0")
+            #     latitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
+            #     longitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
+            # l1nodes['Node' + str(i)] = dict([('Name', nodeName), ('fdn',fdn), ('Latitude', latitude), ('Longitude', longitude)])
+            # i += 1
+        f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
 
 
