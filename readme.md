@@ -1,0 +1,1 @@
+Script for automating SRLG assignment through EPNM RESTconf API.
