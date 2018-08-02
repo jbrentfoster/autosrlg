@@ -312,5 +312,5 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
 
     result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
     fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
-    logging.info(fdn)
-    logging.info(result)
+    logging.info("EPNM generated SRRG: " + fdn)
+    logging.info("Result: " + result)
