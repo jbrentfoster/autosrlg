@@ -90,23 +90,23 @@ def main():
         collectioncode.process_srrgs.processtopolinks(region=region_int, type="Add/Drop")
         print "Collection complete, please see files in jsonfiles directory for results."
     elif user_response == "2":
-        collectioncode.process_srrgs.unassignl1node_srrgs(baseURL, epnmuser, epnmpassword)
+        collectioncode.process_srrgs.unassignl1node_srrgs(baseURL, epnmuser, epnmpassword,'srrgs')
     elif user_response == "3":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
         collectioncode.process_srrgs.generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "4":
-        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword)
-        # collectioncode.process_srrgs.unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword)
+        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword,'srrgs')
+        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword,'srrgs-incorrect')
     elif user_response == "5":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
         collectioncode.process_srrgs.generatel1link_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
     elif user_response == "6":
-        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword)
-        # collectioncode.process_srrgs.unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword)
+        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword,'srrgs')
+        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "7":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name

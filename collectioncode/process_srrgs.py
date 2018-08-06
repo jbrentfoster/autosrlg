@@ -87,7 +87,8 @@ def generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool):
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
 
-def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword):
+def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword,srrg_type):
+    # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
         l1nodes = json.load(f)
         f.close()
@@ -95,10 +96,10 @@ def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword):
     for k1, v1 in l1nodes.items():
         logging.info("")
         logging.info("Unassigning SRRGs for node: " + v1['Name'])
-        if len(v1['srrgs']) == 0:
+        if len(v1[srrg_type]) == 0:
             logging.info("Node has no SRRGs")
         else:
-            for srrg in v1['srrgs']:
+            for srrg in v1[srrg_type]:
                 fdn = srrg
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
@@ -209,7 +210,24 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
             rsfdn = "<p:resource-fdn>"+v1['fdn']+"</p:resource-fdn>"
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
-def unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword):
+# def unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword):
+#     with open("jsonfiles/l1-links_db.json", 'rb') as f:
+#         l1nodes = json.load(f)
+#         f.close()
+#
+#     for k1, v1 in l1nodes.items():
+#         logging.info("")
+#         logging.info("Unassigning SRRGs for link: " + v1['fdn'])
+#         if len(v1['srrgs-incorrect']) == 0:
+#             logging.info("Link has no incorrect SRRGs")
+#         else:
+#             for srrg in v1['srrgs-incorrect']:
+#                 fdn = srrg
+#                 rsfdn = v1['fdn']
+#                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
+def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword,srrg_type):
+    # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/l1-links_db.json", 'rb') as f:
         l1nodes = json.load(f)
         f.close()
@@ -217,31 +235,16 @@ def unassignl1link_incorrect_srrgs(baseURL, epnmuser, epnmpassword):
     for k1, v1 in l1nodes.items():
         logging.info("")
         logging.info("Unassigning SRRGs for link: " + v1['fdn'])
-        if len(v1['srrgs-incorrect']) == 0:
-            logging.info("Link has no incorrect SRRGs")
-        else:
-            for srrg in v1['srrgs-incorrect']:
-                fdn = srrg
-                rsfdn = v1['fdn']
-                unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
-
-def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword):
-    with open("jsonfiles/l1-links_db.json", 'rb') as f:
-        l1nodes = json.load(f)
-        f.close()
-
-    for k1, v1 in l1nodes.items():
-        logging.info("")
-        logging.info("Unassigning SRRGs for link: " + v1['fdn'])
-        if len(v1['srrgs']) == 0:
+        if len(v1[srrg_type]) == 0:
             logging.info("Link has no SRRGs")
         else:
-            for srrg in v1['srrgs']:
+            for srrg in v1[srrg_type]:
                 fdn = srrg
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
 
-def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword):
+def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword,srrg_type):
+    # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/topolinks_db.json", 'rb') as f:
         l1nodes = json.load(f)
         f.close()
@@ -249,10 +252,10 @@ def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword):
     for k1, v1 in l1nodes.items():
         logging.info("")
         logging.info("Unassigning SRRGs for link: " + v1['fdn'])
-        if len(v1['srrgs']) == 0:
+        if len(v1[srrg_type]) == 0:
             logging.info("Link has no SRRGs")
         else:
-            for srrg in v1['srrgs']:
+            for srrg in v1[srrg_type]:
                 fdn = srrg
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
@@ -321,7 +324,7 @@ def generatetopolink_srrgs(baseURL, epnmuser, epnmpassword, pool):
         respool = pool
         createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
 
-        raw_input("Press space bar to continue...")
+        raw_input("Press ENTER to continue...")
 
         print "Topo links for PSLINE-81-2"
         xml_fdn_list = ""
@@ -333,7 +336,7 @@ def generatetopolink_srrgs(baseURL, epnmuser, epnmpassword, pool):
         respool = pool
         createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
 
-        raw_input("Press space bar to continue...")
+        raw_input("Press ENTER to continue...")
 
         # if len(v1['srrgs']) > 0:
         #     logging.info("Node already has SRRG: ")
