@@ -4,13 +4,14 @@ import re
 import json
 import logging
 import sys
+import shutil
 
 
 def runcollector(baseURL, epnmuser, epnmpassword):
     logging.info("Collecting L1 nodes...")
     collectL1Nodes_json(baseURL, epnmuser, epnmpassword)
-    # logging.info("Collecting 4k nodes...")
-    # collect4kNodes_json(baseURL, epnmuser, epnmpassword)
+    logging.info("Collecting 4k nodes...")
+    collect4kNodes_json(baseURL, epnmuser, epnmpassword)
     logging.info("Collecting L1 links...")
     collectL1links_json(baseURL, epnmuser, epnmpassword)
     logging.info("Collecting SRRGs...")
@@ -91,7 +92,7 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
 
     l1nodes = {}
     i = 1
-    with open("jsonfiles/4kNodes.json", 'wb') as f:
+    with open("jsonfiles/4k-nodes_db.json", 'wb') as f:
         for node in thejson['com.response-message']['com.data']['nd.node']:
             if node['nd.product-series'] == "Cisco Network Convergence System 4000 Series":
                 nodeName = node['nd.name']
@@ -201,7 +202,7 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
 
     topolinks = {}
     i = 1
-    with open("jsonfiles/topolinks_db.json", 'wb') as f:
+    with open("jsonfiles/topolinks_add_drop_db.json", 'wb') as f:
         for link in thejson['com.response-message']['com.data']['topo.topological-link']:
             fdn = link['topo.fdn']
             logging.info("Processing topological link " + fdn)
@@ -232,6 +233,10 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             # i += 1
         f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
+    # try:
+    #     shutil.copy('jsonfiles/topolinks_add_drop_db.json', 'jsonfiles/topolinks_line_card_db.json')
+    # except Exception as err:
+    #     logging.info("No log file to copy...")
 
 
 
