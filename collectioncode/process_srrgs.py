@@ -400,6 +400,7 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         f.close()
     logging.info("Attempting to delete SRRG: " + fdn)
     newxmlbody = xmlbody.format(fdn=fdn, rsfdn=rsfdn)
+    print newxmlbody
     uri = "/operations/v1/cisco-resource-activation:unassign-shared-risk-resource-group"
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
