@@ -217,10 +217,10 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
 def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/l1-links_db.json", 'rb') as f:
-        l1nodes = json.load(f)
+        l1links = json.load(f)
         f.close()
 
-    for k1, v1 in l1nodes.items():
+    for k1, v1 in l1links.items():
         logging.info("")
         logging.info("Unassigning SRRGs for link: " + v1['fdn'])
         if len(v1[srrg_type]) == 0:
@@ -235,10 +235,10 @@ def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
 def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/topolinks_add_drop_db.json", 'rb') as f:
-        l1nodes = json.load(f)
+        topolinks = json.load(f)
         f.close()
 
-    for k1, v1 in l1nodes.items():
+    for k1, v1 in topolinks.items():
         logging.info("")
         logging.info("Unassigning SRRGs for link: " + v1['fdn'])
         if len(v1[srrg_type]) == 0:
@@ -363,7 +363,7 @@ def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
                             logging.info('Topo link already has correct SRRG assignment')
                         else:
                             logging.info('Topo link requires SRRG assignment')
-                            usrlabel = "Line Card Node " + v1['Name'] + " " + node['ctp']
+                            usrlabel = "Line Card Node " + v1['Name'] + " " + node['ctp']+ str(random.randint(1, 10001))
                             description = "Automated by Python."
                             respool = pool
                             rsfdn = "<p:resource-fdn>" + val1['fdn'] + "</p:resource-fdn>"

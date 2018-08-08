@@ -108,7 +108,7 @@ def main():
         collectioncode.process_srrgs.generatel1link_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
     elif user_response == "6":
         collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword,'srrgs-ad')
-        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
+        # collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "7":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
@@ -116,7 +116,7 @@ def main():
         collectioncode.process_srrgs.generatetopolink_add_drop_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
     elif user_response == "8":
         collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword,'srrgs-lc')
-        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
+        # collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "9":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
