@@ -77,6 +77,7 @@ def main():
     print("7. ASSIGN ADD/DROP SRRGS")
     print("8. UNASSIGN LINE CARD SRRGS")
     print("9. ASSIGN LINE CARD SRRGS")
+    print("10. GET SRRG")
     print("")
 
     user_response = raw_input("Choose one from above (1, 2, 3 or 4): ")
@@ -122,6 +123,10 @@ def main():
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
         collectioncode.process_srrgs.generatetopolink_line_card_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
+    elif user_response == "10":
+        srrg_number = raw_input("Enter SRRG number: ")
+        print collectioncode.collect.collectSRRG(baseURL, epnmuser, epnmpassword,srrg_number)
+
     else:
         print("Invalid input")
         exit()

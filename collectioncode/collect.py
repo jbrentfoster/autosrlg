@@ -178,6 +178,13 @@ def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
 
+def collectSRRG(baseURL, epnmuser, epnmpassword, srrg):
+    fdn = "fdn=MD=CISCO_EPNM!SRRG=" + srrg
+    uri = "/data/v1/cisco-resource-network:shared-risk-resource-group?" + fdn
+    jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
+    return jsonresponse
+
+
 def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
     startindex = 0
