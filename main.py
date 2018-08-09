@@ -10,6 +10,7 @@ from distutils.dir_util import mkpath
 import os
 import shutil
 
+
 def main():
     # Get path for collection files from command line arguments
     parser = argparse.ArgumentParser(description='A WAE collection tool for EPNM')
@@ -51,7 +52,6 @@ def main():
     consoleHandler.setFormatter(logFormatter)
     rootLogger.addHandler(consoleHandler)
 
-
     print("")
     print("\t\t#############################################")
     print("\t\t#          EPNM SRRG MANAGEMENT TOOL        #")
@@ -88,49 +88,48 @@ def main():
         clean_files(planfiles_root)
         collectioncode.collect.runcollector(baseURL, epnmuser, epnmpassword)
         collectioncode.process_srrgs.parse_ssrgs()
-        collectioncode.process_srrgs.processl1nodes(region=region_int,type="Node")
-        collectioncode.process_srrgs.processl1links(region=region_int,type="Degree")
+        collectioncode.process_srrgs.processl1nodes(region=region_int, type="Node")
+        collectioncode.process_srrgs.processl1links(region=region_int, type="Degree")
         collectioncode.process_srrgs.processtopolinks(region=region_int)
         print "Collection complete, please see files in jsonfiles directory for results."
     elif user_response == "2":
-        collectioncode.process_srrgs.unassignl1node_srrgs(baseURL, epnmuser, epnmpassword,'srrgs')
+        collectioncode.process_srrgs.unassignl1node_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs')
     elif user_response == "3":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
         collectioncode.process_srrgs.generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "4":
-        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword,'srrgs')
-        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword,'srrgs-incorrect')
+        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs')
+        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "5":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
-        collectioncode.process_srrgs.generatel1link_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
+        collectioncode.process_srrgs.generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "6":
-        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword,'srrgs-ad')
+        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-ad')
         # collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "7":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
-        collectioncode.process_srrgs.generatetopolink_add_drop_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
+        collectioncode.process_srrgs.generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "8":
-        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword,'srrgs-lc')
+        collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-lc')
         # collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "9":
         pool_name = raw_input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print "Pool FDN is: " + pool_fdn
-        collectioncode.process_srrgs.generatetopolink_line_card_srrgs(baseURL,epnmuser,epnmpassword, pool_fdn)
+        collectioncode.process_srrgs.generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "10":
         srrg_number = raw_input("Enter SRRG number: ")
-        print collectioncode.collect.collectSRRG(baseURL, epnmuser, epnmpassword,srrg_number)
+        print collectioncode.collect.collectSRRG(baseURL, epnmuser, epnmpassword, srrg_number)
 
     else:
         print("Invalid input")
         exit()
-
 
     # Backup current output files
     logging.info("Backing up files from collection...")

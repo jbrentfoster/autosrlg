@@ -25,7 +25,8 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
     startindex = 0
     jsonmerged = {}
     while incomplete:
-        uri = "/data/v1/cisco-resource-physical:node?product-series=Cisco Network Convergence System 2000 Series&.startIndex=" + str(startindex)
+        uri = "/data/v1/cisco-resource-physical:node?product-series=Cisco Network Convergence System 2000 Series&.startIndex=" + str(
+            startindex)
         jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
         jsonaddition = json.loads(jsonresponse)
         firstindex = jsonaddition['com.response-message']['com.header']['com.firstIndex']
@@ -34,7 +35,7 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
             startindex += 100
         else:
             incomplete = False
-        merge(jsonmerged,jsonaddition)
+        merge(jsonmerged, jsonaddition)
 
     with open("jsongets/l1-nodes.json", 'wb') as f:
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -57,20 +58,24 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
                     latitude = node['nd.latitude']
                     longitude = node['nd.longitude']
                 except KeyError:
-                    logging.error("Could not get longitude or latitidude for node " + nodeName + ".  Setting to 0.0 and 0.0")
+                    logging.error(
+                        "Could not get longitude or latitidude for node " + nodeName + ".  Setting to 0.0 and 0.0")
                     latitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
                     longitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
-                l1nodes['Node' + str(i)] = dict([('Name', nodeName), ('fdn',fdn), ('Latitude', latitude), ('Longitude', longitude)])
+                l1nodes['Node' + str(i)] = dict(
+                    [('Name', nodeName), ('fdn', fdn), ('Latitude', latitude), ('Longitude', longitude)])
                 i += 1
         f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
+
 
 def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
     startindex = 0
     jsonmerged = {}
     while incomplete:
-        uri = "/data/v1/cisco-resource-physical:node?product-series=Cisco Network Convergence System 4000 Series&.startIndex=" + str(startindex)
+        uri = "/data/v1/cisco-resource-physical:node?product-series=Cisco Network Convergence System 4000 Series&.startIndex=" + str(
+            startindex)
         jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
         jsonaddition = json.loads(jsonresponse)
         firstindex = jsonaddition['com.response-message']['com.header']['com.firstIndex']
@@ -79,7 +84,7 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
             startindex += 100
         else:
             incomplete = False
-        merge(jsonmerged,jsonaddition)
+        merge(jsonmerged, jsonaddition)
 
     with open("jsongets/4k-nodes.json", 'wb') as f:
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -102,20 +107,24 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
                     latitude = node['nd.latitude']
                     longitude = node['nd.longitude']
                 except KeyError:
-                    logging.error("Could not get longitude or latitidude for node " + nodeName + ".  Setting to 0.0 and 0.0")
+                    logging.error(
+                        "Could not get longitude or latitidude for node " + nodeName + ".  Setting to 0.0 and 0.0")
                     latitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
                     longitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
-                l1nodes['Node' + str(i)] = dict([('Name', nodeName), ('fdn',fdn),('Latitude', latitude), ('Longitude', longitude)])
+                l1nodes['Node' + str(i)] = dict(
+                    [('Name', nodeName), ('fdn', fdn), ('Latitude', latitude), ('Longitude', longitude)])
                 i += 1
         f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
+
 
 def collectL1links_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
     startindex = 0
     jsonmerged = {}
     while incomplete:
-        uri = "/data/v1/cisco-resource-network:topological-link?topo-layer=ots-link-layer&.startIndex=" + str(startindex)
+        uri = "/data/v1/cisco-resource-network:topological-link?topo-layer=ots-link-layer&.startIndex=" + str(
+            startindex)
         jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
         jsonaddition = json.loads(jsonresponse)
         firstindex = jsonaddition['com.response-message']['com.header']['com.firstIndex']
@@ -124,7 +133,7 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
             startindex += 100
         else:
             incomplete = False
-        merge(jsonmerged,jsonaddition)
+        merge(jsonmerged, jsonaddition)
 
     with open("jsongets/l1-links.json", 'wb') as f:
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -158,6 +167,7 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
         f.write(json.dumps(l1links, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
 
+
 def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
     startindex = 0
@@ -172,11 +182,12 @@ def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
             startindex += 100
         else:
             incomplete = False
-        merge(jsonmerged,jsonaddition)
+        merge(jsonmerged, jsonaddition)
 
     with open("jsongets/SRRGs.json", 'wb') as f:
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         f.close()
+
 
 def collectSRRG(baseURL, epnmuser, epnmpassword, srrg):
     fdn = "fdn=MD=CISCO_EPNM!SRRG=" + srrg
@@ -190,7 +201,8 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
     startindex = 0
     jsonmerged = {}
     while incomplete:
-        uri = "/data/v1/cisco-resource-network:topological-link?topo-layer=och-link-layer&.startIndex=" + str(startindex)
+        uri = "/data/v1/cisco-resource-network:topological-link?topo-layer=och-link-layer&.startIndex=" + str(
+            startindex)
         jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
         jsonaddition = json.loads(jsonresponse)
         firstindex = jsonaddition['com.response-message']['com.header']['com.firstIndex']
@@ -199,7 +211,7 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             startindex += 100
         else:
             incomplete = False
-        merge(jsonmerged,jsonaddition)
+        merge(jsonmerged, jsonaddition)
 
     with open("jsongets/topo-links.json", 'wb') as f:
         f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -246,15 +258,14 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
     #     logging.info("No log file to copy...")
 
 
-
 def merge(a, b):
     "merges b into a"
     for key in b:
-        if key in a:# if key is in both a and b
-            if isinstance(a[key], dict) and isinstance(b[key], dict): # if the key is dict Object
+        if key in a:  # if key is in both a and b
+            if isinstance(a[key], dict) and isinstance(b[key], dict):  # if the key is dict Object
                 merge(a[key], b[key])
             else:
-              a[key] =a[key]+ b[key]
-        else: # if the key is not in dict a , add it to dict a
-            a.update({key:b[key]})
+                a[key] = a[key] + b[key]
+        else:  # if the key is not in dict a , add it to dict a
+            a.update({key: b[key]})
     return a

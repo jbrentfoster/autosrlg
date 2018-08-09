@@ -340,6 +340,7 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
 
             raw_input("Press ENTER to continue...")
 
+
 def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
     with open("jsonfiles/4k-nodes_db.json", 'rb') as f:
         l1nodes = json.load(f)
@@ -363,12 +364,14 @@ def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
                             logging.info('Topo link already has correct SRRG assignment')
                         else:
                             logging.info('Topo link requires SRRG assignment')
-                            usrlabel = "Line Card Node " + v1['Name'] + " " + node['ctp']+ str(random.randint(1, 10001))
+                            usrlabel = "Line Card Node " + v1['Name'] + " " + node['ctp'] + str(
+                                random.randint(1, 10001))
                             description = "Automated by Python."
                             respool = pool
                             rsfdn = "<p:resource-fdn>" + val1['fdn'] + "</p:resource-fdn>"
                             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
                         # raw_input("Press ENTER to continue...")
+
 
 def deleteSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
     with open("collectioncode/post-srrg.xml", 'r') as f:
