@@ -1,0 +1,12 @@
+{% extends "base_template.html" %}
+{% autoescape None %}
+<!--<link>-->
+{% block content %}
+<h3>L1 Links/Degrees</h3>
+<p>Current L1 degree SRLGs</p>
+
+<div class="table" id="tablediv">
+    <table id="links_table">{{ links_table_contents }}</table>
+</div>
+
+{% end %}

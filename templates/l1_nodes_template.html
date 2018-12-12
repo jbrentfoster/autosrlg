@@ -1,0 +1,16 @@
+{% extends "base_template.html" %}
+{% autoescape None %}
+<!--<link>-->
+{% block content %}
+<h3>L1 Nodes</h3>
+<p>Current L1 Nodes SRLGs</p>
+
+<div class="table" id="tablediv">
+    <table id="nodetable"></table>
+</div>
+
+<script type="text/javascript">
+    client.buildtable();
+</script>
+
+{% end %}

@@ -1,0 +1,12 @@
+{% extends "base_template.html" %}
+{% block content %}
+<h1>SRLG is {{ srlg_num }}</h1>
+<div class="table" id="tablediv">
+    <table id="srlgtable"></table>
+</div>
+<div id="srlgdiv"></div>
+<!--<div>Back to home...<a href="{{ home_url }}">home</a></div>-->
+<script type="text/javascript">
+    client.srlgtable({{ srlg_num }});
+</script>
+{% end %}

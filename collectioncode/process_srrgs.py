@@ -325,7 +325,7 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
             respool = pool
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
 
-            raw_input("Press ENTER to continue...")
+            # raw_input("Press ENTER to continue...")
 
         if len(fdn_b_list) > 0:
             print "Topo links for PSLINE-81-2"
@@ -338,7 +338,7 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
             respool = pool
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
 
-            raw_input("Press ENTER to continue...")
+            # raw_input("Press ENTER to continue...")
 
 
 def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
