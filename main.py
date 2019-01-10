@@ -32,7 +32,7 @@ def main():
     epnmpassword = args.epnm_pass
     current_time = str(datetime.now().strftime('%Y-%m-%d-%H%M-%S'))
     archive_root = args.archive_root + "/captures/" + current_time
-    planfiles_root = args.archive_root + "/planfiles/"
+    # planfiles_root = args.archive_root + "/planfiles/"
 
     # Set up logging
     try:
@@ -61,9 +61,9 @@ def main():
     # import base64
     #
     # print("")
-    # server_url = raw_input("Enter EPNM Server IP or Hostname: ")
+    # server_url = input("Enter EPNM Server IP or Hostname: ")
     # print("Server: " + server_url)
-    # user_name = raw_input("Enter EPNM username: ")
+    # user_name = input("Enter EPNM username: ")
     # password = getpass.getpass('Enter EPNM password: ')
 
     print("")
@@ -78,54 +78,67 @@ def main():
     print("8. UNASSIGN LINE CARD SRRGS")
     print("9. ASSIGN LINE CARD SRRGS")
     print("10. GET SRRG")
+    print("11. ASSIGN CONDUIT SRRG")
     print("")
 
-    user_response = raw_input("Choose one from above (1, 2, 3 or 4): ")
+    user_response = input("Choose one from above (1, 2, 3 or 4): ")
+
     if user_response == "1":
         # Run the collector...
-        region = raw_input("Enter expected region number: ")
+        region = input("Enter expected region number: ")
         region_int = int(region)
-        clean_files(planfiles_root)
-        collectioncode.collect.runcollector(baseURL, epnmuser, epnmpassword)
+        # clean_files(planfiles_root)
+        # clean_files()
+        # collectioncode.collect.runcollector(baseURL, epnmuser, epnmpassword)
         collectioncode.process_srrgs.parse_ssrgs()
         collectioncode.process_srrgs.processl1nodes(region=region_int, type="Node")
         collectioncode.process_srrgs.processl1links(region=region_int, type="Degree")
         collectioncode.process_srrgs.processtopolinks(region=region_int)
-        print "Collection complete, please see files in jsonfiles directory for results."
+        print("Collection complete, please see files in jsonfiles directory for results.")
     elif user_response == "2":
         collectioncode.process_srrgs.unassignl1node_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs')
     elif user_response == "3":
-        pool_name = raw_input("Enter name of SRRG pool: ")
+        pool_name = input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
-        print "Pool FDN is: " + pool_fdn
+        print("Pool FDN is: " + pool_fdn)
         collectioncode.process_srrgs.generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "4":
         collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs')
         collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "5":
-        pool_name = raw_input("Enter name of SRRG pool: ")
+        pool_name = input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
-        print "Pool FDN is: " + pool_fdn
+        print("Pool FDN is: " + pool_fdn)
         collectioncode.process_srrgs.generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "6":
         collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-ad')
         collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "7":
-        pool_name = raw_input("Enter name of SRRG pool: ")
+        pool_name = input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
-        print "Pool FDN is: " + pool_fdn
+        print("Pool FDN is: " + pool_fdn)
         collectioncode.process_srrgs.generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "8":
         collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-lc')
         collectioncode.process_srrgs.unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "9":
-        pool_name = raw_input("Enter name of SRRG pool: ")
+        pool_name = input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
-        print "Pool FDN is: " + pool_fdn
+        print("Pool FDN is: " + pool_fdn)
         collectioncode.process_srrgs.generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "10":
-        srrg_number = raw_input("Enter SRRG number: ")
-        print collectioncode.collect.collectSRRG(baseURL, epnmuser, epnmpassword, srrg_number)
+        srrg_number = input("Enter SRRG number: ")
+        print(collectioncode.collect.collectSRRG(baseURL, epnmuser, epnmpassword, srrg_number))
+    elif user_response == "11":
+        pool_name = input("Enter name of SRRG pool: ")
+        pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
+        print("Pool FDN is: " + pool_fdn)
+        fdn1 = "MD=CISCO_EPNM!TL=10.135.7.14:[WDMSIDE-A]--10.135.7.34:[WDMSIDE-B]"
+        fdn2 ="MD=CISCO_EPNM!TL=10.135.7.34:[WDMSIDE-C]--10.135.7.44:[WDMSIDE-A]"
+        link_fdn_list =[fdn1,fdn2]
+        collectioncode.process_srrgs.assignl1link_conduit_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, link_fdn_list,
+                                                               'Conduit')
+
 
     else:
         print("Invalid input")
@@ -150,7 +163,8 @@ def main():
     time.sleep(2)
 
 
-def clean_files(planfiles_root):
+def clean_files():
+    # def clean_files(planfiles_root):
     # Delete all output files
     logging.info("Cleaning files from last collection...")
     try:
@@ -162,7 +176,7 @@ def clean_files(planfiles_root):
     # Recreate output directories
     mkpath('jsonfiles')
     mkpath('jsongets')
-    mkpath(planfiles_root)
+    # mkpath(planfiles_root)
 
 
 if __name__ == '__main__':

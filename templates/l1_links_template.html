@@ -6,7 +6,11 @@
 <p>Current L1 degree SRLGs</p>
 
 <div class="table" id="tablediv">
-    <table id="links_table">{{ links_table_contents }}</table>
+    <table id="links_table"></table>
 </div>
+
+<script type="text/javascript">
+    client.buildL1linksTable('{{ l1links_data }}');
+</script>
 
 {% end %}

@@ -1,6 +1,6 @@
 import json
 import logging
-import utils
+import collectioncode.utils as utils
 import xml.dom.minidom
 import xml.parsers.expat
 import random
@@ -29,8 +29,9 @@ def parse_ssrgs():
         srrg['value-bin'] = srrg['srrg-bin'][12:32]
         srrg['value-dec'] = int(srrg['srrg-bin'][12:32], 2)
 
-    with open("jsonfiles/SRRG_db.json", 'wb') as f:
-        f.write(json.dumps(srrgs, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsonfiles/SRRG_db.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(srrgs, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(srrgs, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -60,8 +61,9 @@ def processl1nodes(region, type):
         v1['srrgs'] = srrg_list
         v1['srrgs-incorrect'] = wrong_srrg_list
 
-    with open("jsonfiles/l1-nodes_db.json", 'wb') as f:
-        f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsonfiles/l1-nodes_db.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -144,6 +146,7 @@ def processl1links(region, type):
         matched_srrgs = getLinkSRRGs(v1['fdn'])
         srrg_list = []
         wrong_srrg_list = []
+        conduit_srrg_list = []
         if len(matched_srrgs) > 0:
             logging.info("Matched an SRRG...")
             for srrg in matched_srrgs:
@@ -151,16 +154,21 @@ def processl1links(region, type):
                 logging.info("Region is: " + str(srrg['region-dec']))
                 logging.info("Type is: " + srrg['type-string'])
                 if srrg['region-dec'] == region and srrg['type-string'] == type:
-                    logging.info("Region & type matches, link db updated.")
+                    logging.info("Region & ROADM degree type matches, link db updated.")
                     srrg_list.append(srrg['srrg.fdn'])
+                elif srrg['region-dec'] == region and srrg['type-string'] == 'Conduit':
+                    logging.info("Region & conduit type matches, link db updated.")
+                    conduit_srrg_list.append(srrg['srrg.fdn'])
                 else:
                     logging.info("Region and/or type doesn't match!")
                     wrong_srrg_list.append(srrg['srrg.fdn'])
         v1['srrgs'] = srrg_list
         v1['srrgs-incorrect'] = wrong_srrg_list
+        v1['srrgs-conduit'] = conduit_srrg_list
 
-    with open("jsonfiles/l1-links_db.json", 'wb') as f:
-        f.write(json.dumps(l1links, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsonfiles/l1-links_db.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(l1links, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(l1links, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -194,10 +202,10 @@ def getLinkSRRGs(linkfdn):
 
 def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
     with open("jsonfiles/l1-links_db.json", 'rb') as f:
-        l1nodes = json.load(f)
+        l1links = json.load(f)
         f.close()
 
-    for k1, v1 in l1nodes.items():
+    for k1, v1 in l1links.items():
         logging.info("")
         logging.info("Generating SRRGs for link: " + v1['fdn'])
         if len(v1['srrgs']) > 0:
@@ -212,6 +220,16 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
             respool = pool
             rsfdn = "<p:resource-fdn>" + v1['fdn'] + "</p:resource-fdn>"
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
+
+
+def assignl1link_conduit_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list, srrg_type):
+    usrlabel = "Conduit SRRG - " + str(random.randint(1, 10001))
+    description = "Automated by Python."
+    respool = pool
+    xml_fdn_list = ""
+    for fdn in link_fdn_list:
+        xml_fdn_list += "<p:resource-fdn>" + fdn + "</p:resource-fdn>" + "\n"
+    createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
 
 
 def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
@@ -281,8 +299,9 @@ def processtopolinks(region):
         v1['srrgs-ad'] = srrg_ad_list
         v1['srrgs-incorrect'] = wrong_srrg_list
 
-    with open("jsonfiles/topolinks_add_drop_db.json", 'wb') as f:
-        f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsonfiles/topolinks_add_drop_db.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(topolinks, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -315,11 +334,11 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
                             elif ctp == "PSLINE-81-2":
                                 fdn_b_list.append({ctp: val1['fdn']})
         if len(fdn_a_list) > 0:
-            print "Topo links for PSLINE-81-1"
+            print ("Topo links for PSLINE-81-1")
             xml_fdn_list = ""
             for fdn in fdn_a_list:
                 xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE-81-1'] + "</p:resource-fdn>" + "\n"
-            print xml_fdn_list
+            print (xml_fdn_list)
             usrlabel = "Add/Drop Node " + v1['Name'] + "  PSLINE-81-1-" + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
@@ -328,11 +347,11 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
             # raw_input("Press ENTER to continue...")
 
         if len(fdn_b_list) > 0:
-            print "Topo links for PSLINE-81-2"
+            print ("Topo links for PSLINE-81-2")
             xml_fdn_list = ""
             for fdn in fdn_b_list:
                 xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE-81-2'] + "</p:resource-fdn>" + "\n"
-            print xml_fdn_list
+            print (xml_fdn_list)
             usrlabel = "Add/Drop Node " + v1['Name'] + "  PSLINE-81-2-" + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
@@ -403,7 +422,7 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         f.close()
     logging.info("Attempting to delete SRRG: " + fdn)
     newxmlbody = xmlbody.format(fdn=fdn, rsfdn=rsfdn)
-    print newxmlbody
+    print (newxmlbody)
     uri = "/operations/v1/cisco-resource-activation:unassign-shared-risk-resource-group"
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
@@ -414,8 +433,8 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         logging.info("XML parsing error.  The received message from websocket is not XML.")
         return
     except Exception as err:
-        print xmlresponse
-        logging.warn("Operation failed.")
+        print (xmlresponse)
+        logging.warning("Operation failed.")
         return
 
     result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
@@ -432,7 +451,7 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
 
     uri = "/operations/v1/cisco-resource-activation:create-shared-risk-resource-group"
     newxmlbody = xmlbody.format(usrlabel=usrlabel, description=description, respool=respool, rsfdn=rsfdn)
-    print newxmlbody
+    print (newxmlbody)
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
     try:
@@ -441,7 +460,7 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
         logging.info("XML parsing error.  The received message from websocket is not XML.")
         return
     except Exception as err:
-        logging.warn("Operation failed.")
+        logging.warning("Operation failed.")
         return
 
     try:

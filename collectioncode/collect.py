@@ -19,6 +19,9 @@ def runcollector(baseURL, epnmuser, epnmpassword):
     logging.info("Collecting Topological Links...")
     collectTopoLinks_json(baseURL, epnmuser, epnmpassword)
 
+def collectSRRGsOnly(baseURL, epnmuser, epnmpassword):
+    logging.info("Collecting SRRGs...")
+    collectSRRGs_json(baseURL, epnmuser, epnmpassword)
 
 def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
@@ -37,8 +40,9 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
             incomplete = False
         merge(jsonmerged, jsonaddition)
 
-    with open("jsongets/l1-nodes.json", 'wb') as f:
-        f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsongets/l1-nodes.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
     with open("jsongets/l1-nodes.json", 'rb') as f:
         jsonresponse = f.read()
@@ -48,7 +52,7 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
 
     l1nodes = {}
     i = 1
-    with open("jsonfiles/l1-nodes_db.json", 'wb') as f:
+    with open("jsonfiles/l1-nodes_db.json", 'w', encoding="utf8") as f:
         for node in thejson['com.response-message']['com.data']['nd.node']:
             if node['nd.product-series'] == "Cisco Network Convergence System 2000 Series":
                 nodeName = node['nd.name']
@@ -65,7 +69,8 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
                 l1nodes['Node' + str(i)] = dict(
                     [('Name', nodeName), ('fdn', fdn), ('Latitude', latitude), ('Longitude', longitude)])
                 i += 1
-        f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        # f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -86,8 +91,9 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
             incomplete = False
         merge(jsonmerged, jsonaddition)
 
-    with open("jsongets/4k-nodes.json", 'wb') as f:
-        f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsongets/4k-nodes.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
     with open("jsongets/4k-nodes.json", 'rb') as f:
         jsonresponse = f.read()
@@ -97,7 +103,7 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
 
     l1nodes = {}
     i = 1
-    with open("jsonfiles/4k-nodes_db.json", 'wb') as f:
+    with open("jsonfiles/4k-nodes_db.json", 'w', encoding="utf8") as f:
         for node in thejson['com.response-message']['com.data']['nd.node']:
             if node['nd.product-series'] == "Cisco Network Convergence System 4000 Series":
                 nodeName = node['nd.name']
@@ -114,7 +120,8 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
                 l1nodes['Node' + str(i)] = dict(
                     [('Name', nodeName), ('fdn', fdn), ('Latitude', latitude), ('Longitude', longitude)])
                 i += 1
-        f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        # f.write(json.dumps(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(l1nodes, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -135,8 +142,9 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
             incomplete = False
         merge(jsonmerged, jsonaddition)
 
-    with open("jsongets/l1-links.json", 'wb') as f:
-        f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsongets/l1-links.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
     with open("jsongets/l1-links.json", 'rb') as f:
         jsonresponse = f.read()
@@ -146,7 +154,7 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
 
     l1links = {}
     i = 1
-    with open("jsonfiles/l1-links_db.json", 'wb') as f:
+    with open("jsonfiles/l1-links_db.json", 'w', encoding="utf8") as f:
         for link in thejson['com.response-message']['com.data']['topo.topological-link']:
             fdn = link['topo.fdn']
             logging.info("Processing link " + fdn)
@@ -164,7 +172,8 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
                         l1links['Link' + str(i)] = dict([('fdn', fdn)])
                         l1links['Link' + str(i)]['Nodes'] = nodes
                     i += 1
-        f.write(json.dumps(l1links, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        # f.write(json.dumps(l1links, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(l1links, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
@@ -184,16 +193,17 @@ def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
             incomplete = False
         merge(jsonmerged, jsonaddition)
 
-    with open("jsongets/SRRGs.json", 'wb') as f:
-        f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsongets/SRRGs.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
 
-def collectSRRG(baseURL, epnmuser, epnmpassword, srrg):
-    fdn = "fdn=MD=CISCO_EPNM!SRRG=" + srrg
-    uri = "/data/v1/cisco-resource-network:shared-risk-resource-group?" + fdn
-    jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
-    return jsonresponse
+# def collectSRRG(baseURL, epnmuser, epnmpassword, srrg):
+#     fdn = "fdn=MD=CISCO_EPNM!SRRG=" + srrg
+#     uri = "/data/v1/cisco-resource-network:shared-risk-resource-group?" + fdn
+#     jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
+#     return jsonresponse
 
 
 def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
@@ -213,15 +223,16 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             incomplete = False
         merge(jsonmerged, jsonaddition)
 
-    with open("jsongets/topo-links.json", 'wb') as f:
-        f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+    with open("jsongets/topo-links.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
     thejson = json.loads(jsonresponse)
 
     topolinks = {}
     i = 1
-    with open("jsonfiles/topolinks_add_drop_db.json", 'wb') as f:
+    with open("jsonfiles/topolinks_add_drop_db.json", 'w', encoding="utf8") as f:
         for link in thejson['com.response-message']['com.data']['topo.topological-link']:
             fdn = link['topo.fdn']
             logging.info("Processing topological link " + fdn)
@@ -231,7 +242,7 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             if len(endpointlist) > 1:
                 for ep in endpointlist:
                     endpoint = ep['topo.endpoint-ref']
-                    print "Endpoint is: " + endpoint
+                    # print "Endpoint is: " + endpoint
                     node = endpoint.split('!')[1].split('=')[1]
                     ctp = endpoint.split('!')[2].split('=')[2]
                     # MD=CISCO_EPNM!ND=NCS4K-Site3!CTP=name=Optics0/5/0/11;lr=lr-optical-section
@@ -250,7 +261,8 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             #     longitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
             # l1nodes['Node' + str(i)] = dict([('Name', nodeName), ('fdn',fdn), ('Latitude', latitude), ('Longitude', longitude)])
             # i += 1
-        f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        # f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(topolinks, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
     # try:
     #     shutil.copy('jsonfiles/topolinks_add_drop_db.json', 'jsonfiles/topolinks_line_card_db.json')

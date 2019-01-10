@@ -2,7 +2,7 @@ import requests
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 import json
-import errors
+import collectioncode.errors
 import xml.dom.minidom
 
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -24,9 +24,9 @@ def rest_get_json(baseURL, uri, user, password):
         else:
             raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code))
     except errors.InputError as err:
-        print "Exception raised: " + str(type(err))
-        print err.expression
-        print err.message
+        # print "Exception raised: " + str(type(err))
+        print (err.expression)
+        print (err.message)
         return
 
 
@@ -47,9 +47,9 @@ def rest_get_xml(baseURL, uri, user, password):
         else:
             raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code))
     except errors.InputError as err:
-        print "Exception raised: " + str(type(err))
-        print err.expression
-        print err.message
+        print ("Exception raised: " + str(type(err)))
+        print (err.expression)
+        print (err.message)
         return
 
 
@@ -70,9 +70,9 @@ def rest_post_xml(baseURL, uri, thexml, user, password):
         else:
             raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code) + "\n" + r.content)
     except errors.InputError as err:
-        print "Exception raised: " + str(type(err))
-        print err.expression
-        print err.message
+        print ("Exception raised: " + str(type(err)))
+        print (err.expression)
+        print (err.message)
         return
 
 def rest_post_json(baseURL, uri, thejson, user, password):
@@ -92,9 +92,9 @@ def rest_post_json(baseURL, uri, thejson, user, password):
             else:
                 raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code))
         except errors.InputError as err:
-            print "Exception raised: " + str(type(err))
-            print err.expression
-            print err.message
+            print ("Exception raised: " + str(type(err)))
+            print (err.expression)
+            print (err.message)
             return
 
 # def cleanxml(thexml):
