@@ -87,9 +87,8 @@ def main():
         # Run the collector...
         region = input("Enter expected region number: ")
         region_int = int(region)
-        # clean_files(planfiles_root)
-        # clean_files()
-        # collectioncode.collect.runcollector(baseURL, epnmuser, epnmpassword)
+        clean_files()
+        collectioncode.collect.runcollector(baseURL, epnmuser, epnmpassword)
         collectioncode.process_srrgs.parse_ssrgs()
         collectioncode.process_srrgs.processl1nodes(region=region_int, type="Node")
         collectioncode.process_srrgs.processl1links(region=region_int, type="Degree")
@@ -103,7 +102,8 @@ def main():
         print("Pool FDN is: " + pool_fdn)
         collectioncode.process_srrgs.generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool_fdn)
     elif user_response == "4":
-        collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs')
+        # collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs')
+        # collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-conduit')
         collectioncode.process_srrgs.unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, 'srrgs-incorrect')
     elif user_response == "5":
         pool_name = input("Enter name of SRRG pool: ")
@@ -133,9 +133,11 @@ def main():
         pool_name = input("Enter name of SRRG pool: ")
         pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + pool_name
         print("Pool FDN is: " + pool_fdn)
-        fdn1 = "MD=CISCO_EPNM!TL=10.135.7.14:[WDMSIDE-A]--10.135.7.34:[WDMSIDE-B]"
-        fdn2 ="MD=CISCO_EPNM!TL=10.135.7.34:[WDMSIDE-C]--10.135.7.44:[WDMSIDE-A]"
-        link_fdn_list =[fdn1,fdn2]
+        # fdn1 = "MD=CISCO_EPNM!TL=10.135.7.14:[WDMSIDE-A]--10.135.7.34:[WDMSIDE-B]"
+        # fdn2 ="MD=CISCO_EPNM!TL=10.135.7.34:[WDMSIDE-C]--10.135.7.44:[WDMSIDE-A]"
+        fdn1 = "MD=CISCO_EPNM!TL=10.135.7.24:[WDMSIDE-C]--10.135.7.44:[WDMSIDE-C]"
+        # fdn2 ="MD=CISCO_EPNM!TL=10.135.7.24:[WDMSIDE-B]--10.135.7.34:[WDMSIDE-A]"
+        link_fdn_list =[fdn1]
         collectioncode.process_srrgs.assignl1link_conduit_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, link_fdn_list,
                                                                'Conduit')
 

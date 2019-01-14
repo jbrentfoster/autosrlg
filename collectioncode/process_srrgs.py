@@ -222,7 +222,7 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
 
-def assignl1link_conduit_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list, srrg_type):
+def assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list):
     usrlabel = "Conduit SRRG - " + str(random.randint(1, 10001))
     description = "Automated by Python."
     respool = pool
@@ -249,6 +249,22 @@ def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
 
+
+def unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, link_fdn, srrg_type):
+    # srrg_type should be either 'srrgs' or srrgs-incorrect
+    with open("jsonfiles/l1-links_db.json", 'rb') as f:
+        l1links = json.load(f)
+        f.close()
+    logging.info("Unassigning SRRGs for link: " + link_fdn)
+    for k1, v1 in l1links.items():
+        if v1['fdn'] == link_fdn:
+            if len(v1[srrg_type]) == 0:
+                logging.info("Link has no SRRGs")
+            else:
+                for srrg in v1[srrg_type]:
+                    fdn = srrg
+                    rsfdn = v1['fdn']
+                    unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
 
 def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
@@ -422,7 +438,7 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         f.close()
     logging.info("Attempting to delete SRRG: " + fdn)
     newxmlbody = xmlbody.format(fdn=fdn, rsfdn=rsfdn)
-    print (newxmlbody)
+    logging.info (newxmlbody)
     uri = "/operations/v1/cisco-resource-activation:unassign-shared-risk-resource-group"
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
@@ -433,7 +449,7 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         logging.info("XML parsing error.  The received message from websocket is not XML.")
         return
     except Exception as err:
-        print (xmlresponse)
+        logging.warning (xmlresponse)
         logging.warning("Operation failed.")
         return
 
@@ -451,13 +467,13 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
 
     uri = "/operations/v1/cisco-resource-activation:create-shared-risk-resource-group"
     newxmlbody = xmlbody.format(usrlabel=usrlabel, description=description, respool=respool, rsfdn=rsfdn)
-    print (newxmlbody)
+    logging.info(newxmlbody)
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
     try:
         thexml = xml.dom.minidom.parseString(xmlresponse)
     except xml.parsers.expat.ExpatError as err:
-        logging.info("XML parsing error.  The received message from websocket is not XML.")
+        logging.warning("XML parsing error.  The received message from websocket is not XML.")
         return
     except Exception as err:
         logging.warning("Operation failed.")
@@ -469,5 +485,5 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
         logging.info("EPNM generated SRRG: " + fdn)
         logging.info("Result: " + result)
     except Exception as err:
-        logging.warn("Error parsing response")
-        logging.warn(xmlresponse)
+        logging.warning("Error parsing response")
+        logging.warning(xmlresponse)

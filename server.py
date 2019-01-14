@@ -21,66 +21,140 @@ import logging
 from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
 from distutils.dir_util import mkpath
+import time
 
-
-
+# global variables...
 # epnmipaddr = args.epnm_ipaddr
-epnmipaddr = "10.135.7.222"
-baseURL = "https://" + epnmipaddr + "/restconf"
 # epnmuser = args.epnm_user
 # epnmpassword = args.epnm_pass
+epnmipaddr = "10.135.7.222"
+baseURL = "https://" + epnmipaddr + "/restconf"
 epnmuser = "root"
 epnmpassword = "Epnm1234"
 open_websockets = []
+global_region = 1
+
 
 class IndexHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.render("templates/index.html", port=args.port)
+        self.render("templates/index.html", port=args.port, epnm_ip=epnmipaddr, epnm_user=epnmuser,
+                    epnm_pass=epnmpassword, region=global_region)
+
 
 class AjaxHandler(tornado.web.RequestHandler):
 
     async def post(self):
-        # message = {"id": str(uuid.uuid4()), "body": self.get_argument("body")}
-        # foo = self.get_argument("firstname")
-        # bar = self.get_argument("lastname")
-        # response = {"first": foo, "last": bar}
-        # print(foo+bar)
-        message = tornado.escape.recursive_unicode(self.request.arguments)
-        # moo = self.request.arguments
-        # goo  = tornado.escape.recursive_unicode(self.request.arguments)
-        # foo = tornado.escape.json_decode(self.request.arguments)
-        # bar = json.loads(self.request.body.decode('utf-8'))
-        print(json.dumps(message))
-        action = message['action'][0]
-        region = message['region'][0]
-        srlg_only = message['srlg-only'][0]
-        region_int = int(region)
+        global global_region
+        global epnmipaddr
+        global epnmuser
+        global epnmpassword
+        request = tornado.escape.recursive_unicode(self.request.arguments)
+        logging.info("Received AJAX request..")
+        logging.info(json.dumps(request))
+        try:
+            action = request['action'][0]
+        except Exception as err:
+            logging.warning("Invalid AJAX request")
+            logging.warning(err)
+            response = {'status': 'failed', 'error': err}
+            self.write(json.dumps(response))
 
         if action == 'collect':
             try:
-                # clean_files()
+                # region = request['region'][0]
+                srlg_only = request['srlg-only'][0]
+                # region_int = int(region)
+                # global_region = region_int
                 self.send_message_open_ws("Collecting data from EPNM...")
                 if srlg_only == 'on':
                     collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
-                else:
+                elif srlg_only == 'off':
+                    clean_files()
                     collect.runcollector(baseURL, epnmuser, epnmpassword)
                 self.send_message_open_ws("Processing SRLGs...")
                 process_srrgs.parse_ssrgs()
                 self.send_message_open_ws("Processing nodes, links, topolinks...")
-                process_srrgs.processl1nodes(region=region_int, type="Node")
-                process_srrgs.processl1links(region=region_int, type="Degree")
-                process_srrgs.processtopolinks(region=region_int)
+                process_srrgs.processl1nodes(region=global_region, type="Node")
+                process_srrgs.processl1links(region=global_region, type="Degree")
+                process_srrgs.processtopolinks(region=global_region)
                 response = {'action': 'collect', 'status': 'completed'}
+                logging.info(response)
+                self.write(json.dumps(response))
             except Exception as err:
-                print("Exception caught!!!")
-                print(err)
+                logging.info("Exception caught!!!")
+                logging.info(err)
                 response = {'action': 'collect', 'status': 'failed'}
-        self.write(json.dumps(response))
+                self.write(json.dumps(response))
+        elif action == 'assign-srrg':
+            try:
+                pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name'][0]
+                link_fdn_list = request['fdns[]']
+                srrg_type = request['type'][0]
+                if srrg_type == "conduit":
+                    process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, link_fdn_list)
+                elif srrg_type == "degree":
+                    for fdn in link_fdn_list:
+                        single_fdn_list = [fdn]
+                        process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, single_fdn_list)
+                collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
+                process_srrgs.parse_ssrgs()
+                logging.info("Region is " + str(global_region))
+                process_srrgs.processl1nodes(region=global_region, type="Node")
+                process_srrgs.processl1links(region=global_region, type="Degree")
+                process_srrgs.processtopolinks(region=global_region)
+                response = {'action': 'assign-srrg', 'status': 'completed'}
+                self.write(json.dumps(response))
+            except Exception as err:
+                logging.info("Exception caught!!!")
+                logging.info(err)
+                response = {'action': 'assign-srrg', 'status': 'failed'}
+                self.write(json.dumps(response))
+        elif action == 'unassign-srrg':
+            try:
+                options = request['options'][0]
+                if options == 'conduit':
+                    srrg_type = 'srrgs-conduit'
+                elif options == 'link':
+                    srrg_type = 'srrgs'
+                link_fdn_list = request['fdns[]']
+                for fdn in link_fdn_list:
+                    process_srrgs.unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+                collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
+                process_srrgs.parse_ssrgs()
+                logging.info("Region is " + str(global_region))
+                process_srrgs.processl1nodes(region=global_region, type="Node")
+                process_srrgs.processl1links(region=global_region, type="Degree")
+                process_srrgs.processtopolinks(region=global_region)
+                response = {'action': 'unassign-srrg', 'status': 'success'}
+                self.write(json.dumps(response))
+            except Exception as err:
+                logging.warning("Exception during unassign-srrg operation!")
+                response = {'action': 'unassign-srrg', 'status': 'fail'}
+                self.write(json.dumps(response))
+        elif action == 'get-l1links':
+            l1links = methods.getl1links()
+            logging.info(l1links)
+            self.write(json.dumps(l1links))
+        elif action == 'update-epnm':
+            time.sleep(2)
+            epnmipaddr = request['epnm-ip'][0]
+            epnmuser = request['epnm-user'][0]
+            epnmpassword = request['epnm-pass'][0]
+            region = request['region'][0]
+            region_int = int(region)
+            global_region = region_int
+            response = {'action': 'update-epnm', 'status': 'success'}
+            self.write(json.dumps(response))
+        else:
+            logging.warning("Received request for unknown operation!")
+            response = {'status': 'unknown', 'error': "unknown request"}
+            self.write(json.dumps(response))
 
     def send_message_open_ws(self, message):
         for ws in open_websockets:
             ws.send_message(message)
+
 
 class SRLGHandler(tornado.web.RequestHandler):
 
@@ -88,11 +162,13 @@ class SRLGHandler(tornado.web.RequestHandler):
         srlg = methods.getsrlg(srlg_num)
         self.render("templates/srlg_template.html", port=args.port, srlg_num=srlg_num, srlg_data=srlg)
 
+
 class L1NodesHandler(tornado.web.RequestHandler):
 
     def get(self):
         l1nodes = methods.getl1nodes()
         self.render("templates/l1_nodes_template.html", port=args.port, l1nodes_data=l1nodes)
+
 
 class L1LinksHandler(tornado.web.RequestHandler):
 
@@ -101,7 +177,10 @@ class L1LinksHandler(tornado.web.RequestHandler):
         # uri = self.request.uri
         # base_full_url = self.request.protocol + "://" + self.request.host
         l1links = methods.getl1links()
-        self.render("templates/l1_links_template.html", port=args.port, l1links_data=l1links)
+        conduit_pools = methods.get_srrg_pools(0)
+        degree_pools = methods.get_srrg_pools(2)
+        self.render("templates/l1_links_template.html", port=args.port, degree_pools=degree_pools, conduit_pools=conduit_pools, l1links_data=l1links)
+
 
 class TopoLinksHandler(tornado.web.RequestHandler):
 
@@ -109,10 +188,11 @@ class TopoLinksHandler(tornado.web.RequestHandler):
         topo_links = methods.gettopolinks()
         self.render("templates/topo_links_template.html", port=args.port, topo_links_data=topo_links)
 
+
 class WebSocket(tornado.websocket.WebSocketHandler):
 
     def open(self):
-        print("WebSocket opened")
+        logging.info("WebSocket opened")
         open_websockets.append(self)
 
     def send_message(self, message):
@@ -122,7 +202,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         """Evaluates the function pointed to by json-rpc."""
         json_rpc = json.loads(message)
-        print ("Websocket received message: " + json.dumps(json_rpc))
+        logging.info("Websocket received message: " + json.dumps(json_rpc))
 
         try:
             # The only available method is `count`, but I'm generalizing
@@ -139,12 +219,12 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         json_rpc_response = json.dumps({"result": result, "error": error,
                                         "id": json_rpc["id"]},
                                        separators=(",", ":"))
-        print ("Websocket replied with message: " + json_rpc_response)
+        logging.info("Websocket replied with message: " + json_rpc_response)
         self.write_message(json_rpc_response)
 
     def on_close(self):
         open_websockets.remove(self)
-        print("WebSocket closed!")
+        logging.info("WebSocket closed!")
 
 
 def main():
@@ -152,7 +232,7 @@ def main():
     try:
         os.remove('collection.log')
     except Exception as err:
-        print("No log file to delete...")
+        logging.info("No log file to delete...")
 
     logFormatter = logging.Formatter('%(levelname)s:  %(message)s')
     rootLogger = logging.getLogger()
@@ -185,7 +265,7 @@ def main():
                 url(r'/srlg/static/(.*)',
                     tornado.web.StaticFileHandler,
                     dict(path=settings['static_path'])),
-                url(r'/l1links',L1LinksHandler, name="l1_links"),
+                url(r'/l1links', L1LinksHandler, name="l1_links"),
                 url(r'/l1nodes', L1NodesHandler, name="l1_nodes"),
                 url(r'/topolinks', TopoLinksHandler, name="topo_links"),
                 url(r'/ajax', AjaxHandler, name="ajax"),
@@ -199,6 +279,7 @@ def main():
 
     tornado.ioloop.IOLoop.instance().start()
 
+
 def clean_files():
     # Delete all output files
     logging.info("Cleaning files from last collection...")
@@ -211,6 +292,7 @@ def clean_files():
     # Recreate output directories
     mkpath('jsonfiles')
     mkpath('jsongets')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Starts a webserver for stuff.")

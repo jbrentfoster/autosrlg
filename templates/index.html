@@ -1,68 +1,84 @@
 {% extends "base_template.html" %}
-<!--<link>-->
 {% block content %}
 <h1>SRLG Management Tool</h1>
 <p>Handles EPNM SRLG assignment via API.</p>
-<!--<input class="number" type="text" value="0" />-->
-<!--<button class="submit" onclick="javascript:client.count($('.number').val())">bar</button>-->
-<form class="form-inline" id="collectform">
-    <div>Expected Region</div>
-    <div class="form-group">
-        <select class="form-control" name="region">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>7</option>
-            <option>8</option>
-        </select>
+<div>
+    <form id="epnm-form">
+        <div><input type="hidden" name="action" value="update-epnm"></div>
+        <div class="form-row">
+            <div class="form-group col-md-2">
+                <label for="exampleInputEmail1">EPNM IP Address</label>
+                <input name="epnm-ip" type="text" class="form-control" id="exampleInputEmail1"
+                       aria-describedby="emailHelp"
+                       value="{{epnm_ip}}">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="exampleInputUser">Username</label>
+                <input name="epnm-user" type="text" class="form-control" id="exampleInputUser" value="{{epnm_user}}">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="exampleInputPassword1">Password</label>
+                <input name="epnm-pass" type="password" class="form-control" id="exampleInputPassword1"
+                       value="{{epnm_pass}}">
+            </div>
+            <div class="form-group col-md-2">
+                <label>Expected Region</label>
+                <select class="form-control" name="region" id="region-select">
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="update-btn">Update</button>
+    </form>
+</div>
+
+<form id="collectform">
+    <div class="form-row">
+        <div><input type="hidden" name="action" value="collect"></div>
+        <div class="form-group col-md-2">
+            <div>
+            <button type="submit" class="btn btn-success" id="collect-btn">
+                Collect
+            </button>
+            </div>
+            <div class="form-check">
+                <input type='hidden' value='off' name='srlg-only' id="srlg_check_hidden">
+                <input type="checkbox" class="form-check-input" name="srlg-only" id="srlg_check" checked="checked">
+                <label class="form-check-label">SRLG Only</label>
+            </div>
+        </div>
     </div>
-    <!--<div class="form-group">-->
-    <!--<input type="text" value="Jones" name="lastname" class="form-control">-->
-    <!--</div>-->
-    <div><input type="hidden" name="action" value="collect"></div>
-    <div class="form-check">
-        <input type="checkbox" class="form-check-input" name="srlg-only" id="srlg_check" checked="checked">
-        <label class="form-check-label" for="exampleCheck1">SRLG Only</label>
-    </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-success" id="collect-btn">
-            <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
-            Collect
-        </button>
-    </div>
-    <p class="spinner-border text-primary" role="status" id="loading-indicator" style="display:none">
-        <span class="sr-only">Loading...</span>
-    </p>
+    <!--<p class="spinner-border text-primary" role="status" id="loading-indicator" style="display:none">-->
+    <!--<span class="sr-only">Loading...</span>-->
+    <!--</p>-->
 </form>
 
-<!--<form class="form-inline" id="dropdownform">-->
-<!--<div><input type="text" value="Enter expected region" name="region" class="form-control"></div>-->
-<!--<div><input type="text" value="Enter EPNM SRLG Pool name" name="pool" class="form-control"></div>-->
-<!--<div class="bd-example">-->
-<!--<div class="dropdown show">-->
-<!--<a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"-->
-<!--data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
-<!--Dropdown link-->
-<!--</a>-->
+<h3>Collection Progress</h3>
+<div class="card">
+    <div class="card-body" id="textfield" style="min-height: 200px;max-height: 200px;overflow-y: scroll;">
+        <p class="card-text" id="updatefield"></p>
+    </div>
+</div>
+<script type="text/javascript">
+    client.set_region_select({{region}});
 
-<!--<div class="dropdown-menu" aria-labelledby="dropdownMenuLink" id="dropdownmenu">-->
-<!--<a class="dropdown-item" name="collect" id="collect">Collect SRLGs</a>-->
-<!--<a class="dropdown-item" id="assign_l1_node">Assign L1 Node SRLGs</a>-->
-<!--<a class="dropdown-item" id="assign_l1_degree">Assign L1 Degree SRLGs</a>-->
-<!--</div>-->
-<!--</div>-->
-<!--</div>-->
-<!--</form>-->
+</script>
+{% end %}
+
 <!--<script type="text/javascript">-->
 <!--// Connect a websocket to the server. The port notation is post- -->
 <!--// processed server-side according to the config file-->
 <!--var ws = client.connect({{port}});-->
 <!--</script>-->
 <!--<button type="button" onclick="javascript:client.buildtable()" class="btn btn-success">Table</button>-->
-<p>Port is {{port}}</p>
+<!--<p>Port is {{port}}</p>-->
 
 <!--<div class="spinner-border text-primary" role="status" id="loading-indicator" style="display:none">-->
 <!--<span class="sr-only">Loading...</span>-->
@@ -70,16 +86,7 @@
 
 <!--<div class="loader" id="loading-indicator"></div>-->
 
-<h3>Collection Progress</h3>
-<div class="card">
-    <div class="card-body" id="textfield" style="min-height: 200px;max-height: 200px;overflow-y: scroll;">
-        <!--<h5 class="card-title">Collection Progress</h5>-->
-        <!--<p class="card-text">Some quick example text to build on the panel title and make up the bulk of the panel's content.</p>-->
-        <!--<p class="card-text"></p>-->
-        <p class="card-text" id="updatefield"></p>
-        <!--<p>bar</p>-->
-    </div>
-</div>
+
 <!--<p><a href="static/topologydata" type="text/json">Topology Data Link</a></p>-->
 <!--<h3>history</h3>-->
 <!--<div class="answer" id="answerdiv"></div>-->
@@ -93,4 +100,3 @@
 <!--</script>-->
 
 
-{% end %}

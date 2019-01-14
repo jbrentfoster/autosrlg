@@ -16,12 +16,16 @@ def runcollector(baseURL, epnmuser, epnmpassword):
     collectL1links_json(baseURL, epnmuser, epnmpassword)
     logging.info("Collecting SRRGs...")
     collectSRRGs_json(baseURL, epnmuser, epnmpassword)
+    logging.info("Collecting SRRG pools...")
+    collectSRRG_pools_json(baseURL, epnmuser, epnmpassword)
     logging.info("Collecting Topological Links...")
     collectTopoLinks_json(baseURL, epnmuser, epnmpassword)
 
 def collectSRRGsOnly(baseURL, epnmuser, epnmpassword):
     logging.info("Collecting SRRGs...")
     collectSRRGs_json(baseURL, epnmuser, epnmpassword)
+    logging.info("Collecting SRRG pools...")
+    collectSRRG_pools_json(baseURL, epnmuser, epnmpassword)
 
 def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
@@ -189,15 +193,36 @@ def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
         lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
+            merge(jsonmerged, jsonaddition)
         else:
             incomplete = False
-        merge(jsonmerged, jsonaddition)
+        # merge(jsonmerged, jsonaddition)
 
     with open("jsongets/SRRGs.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
+def collectSRRG_pools_json(baseURL, epnmuser, epnmpassword):
+    incomplete = True
+    startindex = 0
+    jsonmerged = {}
+    while incomplete:
+        uri = "/data/v1/cisco-resource-network:srrg-pool?.startIndex=" + str(startindex)
+        jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
+        jsonaddition = json.loads(jsonresponse)
+        firstindex = jsonaddition['com.response-message']['com.header']['com.firstIndex']
+        lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
+        if (lastindex - firstindex) == 99 and lastindex != -1:
+            startindex += 100
+        else:
+            incomplete = False
+        merge(jsonmerged, jsonaddition)
+
+    with open("jsongets/SRRG_pools.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
+        f.close()
 
 # def collectSRRG(baseURL, epnmuser, epnmpassword, srrg):
 #     fdn = "fdn=MD=CISCO_EPNM!SRRG=" + srrg

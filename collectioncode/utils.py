@@ -2,8 +2,9 @@ import requests
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 import json
-import collectioncode.errors
+import collectioncode.errors as errors
 import xml.dom.minidom
+import logging
 
 urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -63,12 +64,14 @@ def rest_post_xml(baseURL, uri, thexml, user, password):
     restURI = baseURL + uri
     try:
         r = requests.post(restURI, data=thexml, headers=headers, proxies=proxies, auth=(user, password), verify=False)
-        # print "HTTP response code is: " + str(r.status_code)
+        print ("HTTP response code is: " + str(r.status_code))
         if r.status_code == 200:
             response_xml = xml.dom.minidom.parseString(r.content)
             return response_xml.toprettyxml()
         else:
-            raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code) + "\n" + r.content)
+            logging.warning("Failed XML post!")
+            logging.warning("HTTP status code: " + str(r.status_code))
+            # raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code) + "\n" + r.content)
     except errors.InputError as err:
         print ("Exception raised: " + str(type(err)))
         print (err.expression)

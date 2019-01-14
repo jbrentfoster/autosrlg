@@ -4,13 +4,70 @@
 {% block content %}
 <h3>L1 Links/Degrees</h3>
 <p>Current L1 degree SRLGs</p>
-
+<form class="form-inline" id="l1links-degree-form">
+    <div><input type="hidden" name="type" value="degree"></div>
+    <div class="form-group">
+        <select class="form-control" name="pool-name" id="region-select">
+            <!--<option>Region 4 ROADM Degree</option>-->
+            <!--<option>Region 4 Conduit</option>-->
+            {% for pool in degree_pools %}
+            {% block pool %}
+               <option>{{ escape(pool) }}</option>
+            {% end %}
+      {% end %}
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-success" id="l1links-degree-btn">
+            <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
+            Assign Degree
+        </button>
+    </div>
+</form>
+<form class="form-inline" id="l1links-conduit-form">
+    <div><input type="hidden" name="type" value="conduit"></div>
+    <div class="form-group">
+        <select class="form-control" name="pool-name" id="region-select">
+            <!--<option>Region 4 ROADM Degree</option>-->
+            <!--<option>Region 4 Conduit</option>-->
+            {% for pool in conduit_pools %}
+            {% block pool %}
+               <option>{{ escape(pool) }}</option>
+            {% end %}
+      {% end %}
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-success" id="l1links-conduit-btn">
+            <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
+            Assign Conduit
+        </button>
+    </div>
+</form>
+<form class="form-inline" id="l1links-unassign-form">
+    <div class="form-group">
+        <button type="submit" class="btn btn-success" id="l1links-unassign-btn" disabled>
+            Unassign
+        </button>
+        <div class="btn-group" data-toggle="buttons">
+            <label label-default="" class="btn btn-default">
+                <input id="option1" name="options" type="radio" value="link"/>Link/Degree</label>
+            <label label-default="" class="btn btn-default">
+                <input id="option2" name="options" type="radio" value="conduit"/>Conduit</label>
+        </div>
+    </div>
+</form>
 <div class="table" id="tablediv">
-    <table id="links_table"></table>
+    <table id="links_table" name="l1links"></table>
 </div>
-
 <script type="text/javascript">
     client.buildL1linksTable('{{ l1links_data }}');
+
+
+
+
+
+
 </script>
 
 {% end %}
