@@ -32,7 +32,7 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
     startindex = 0
     jsonmerged = {}
     while incomplete:
-        uri = "/data/v1/cisco-resource-physical:node?product-series=Cisco Network Convergence System 2000 Series&.startIndex=" + str(
+        uri = "/data/v1/cisco-resource-physical:node?product-series=Cisco Network Convergence System 2000 Series&.depth=1&.startIndex=" + str(
             startindex)
         jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
         jsonaddition = json.loads(jsonresponse)

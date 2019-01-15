@@ -4,9 +4,43 @@
 {% block content %}
 <h3>L1 Nodes</h3>
 <p>Current L1 Nodes SRLGs</p>
-
+<div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close" >&times;</a>
+  <strong>Failed!</strong> The request to the server failed.  Try again.
+</div>
+<form id="l1nodes-form">
+    <div><input type="hidden" name="type" value="l1node"></div>
+    <div><input type="hidden" name="action" value="assign-srrg"></div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <select class="form-control" name="pool-name" id="region-select">
+                {% for pool in pools %}
+                {% block pool %}
+                <option>{{ escape(pool) }}</option>
+                {% end %}
+                {% end %}
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <button type="submit" class="btn btn-success" id="l1nodes-btn" disabled>
+                Assign Node
+            </button>
+        </div>
+    </div>
+</form>
+<form id="l1nodes-unassign-form">
+    <div><input type="hidden" name="action" value="unassign-srrg"></div>
+    <div><input type="hidden" name="type" value="l1node"></div>
+    <div class="form-row">
+        <div class="form-group col-md-5">
+            <button type="submit" class="btn btn-success" id="l1nodes-unassign-btn" disabled>
+                Unassign
+            </button>
+        </div>
+    </div>
+</form>
 <div class="table" id="tablediv">
-    <table id="nodetable"></table>
+    <table id="nodes_table"></table>
 </div>
 
 <script type="text/javascript">

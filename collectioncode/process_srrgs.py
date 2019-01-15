@@ -106,6 +106,21 @@ def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
 
+def unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, node_fdn, srrg_type):
+    # srrg_type should be either 'srrgs' or srrgs-incorrect
+    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+        l1nodes = json.load(f)
+        f.close()
+    for k1, v1 in l1nodes.items():
+        if v1['fdn'] == node_fdn:
+            if len(v1[srrg_type]) == 0:
+                logging.info("Node has no SRRGs")
+            else:
+                for srrg in v1[srrg_type]:
+                    fdn = srrg
+                    rsfdn = v1['fdn']
+                    unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
 
 def getNodeSRRGs(nodename):
     with open("jsonfiles/SRRG_db.json", 'rb') as f:

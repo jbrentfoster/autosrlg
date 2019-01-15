@@ -8,6 +8,18 @@
  $(document).ready(function() {
     var buttonpressed;
 
+    $("#l1nodes-btn").on("click", function() {
+        buttonpressed = $(this);
+    });
+
+    $("#l1nodes-unassign-btn").on("click", function() {
+        buttonpressed = $(this);
+    });
+
+    $("#l1links-unassign-btn").on("click", function() {
+        buttonpressed = $(this);
+    });
+
     $("#l1links-degree-btn").on("click", function() {
         buttonpressed = $(this);
     });
@@ -30,6 +42,20 @@
             document.getElementById('srlg_check_hidden').disabled = true;
         }
         run_collection($(this));
+        return false;
+    });
+
+    $("#l1nodes-form").on("submit", function() {
+        console.log("L1nodes assign button called from form submit!");
+        btn_text = buttonpressed.text();
+        l1nodes_srlg($(this),buttonpressed,btn_text);
+        return false;
+    });
+
+    $("#l1nodes-unassign-form").on("submit", function() {
+        console.log("L1nodes unassign button called from form submit!");
+        btn_text = buttonpressed.text();
+        l1nodes_srlg($(this),buttonpressed,btn_text);
         return false;
     });
 
@@ -60,19 +86,6 @@
         return false;
     });
 //    TODO Add code to spin spinners on AJAX call
-
-//    $("#collect").on("click", function() {
-//        console.log("newMessage called from button click!");
-//        $("#dropdownMenuLink").dropdown('toggle');
-//        newMessage($("#dropdownform"));
-//        return false;
-//    });
-
-    //Handle enabling the submit button on L1links page when radio buttons are selected
-    $("input[name='options']").on('change', function(){
-      var btn = $("#l1links-unassign-btn");
-      btn.prop('disabled', false);
-    });
 
     //Open a websocket to the server (used only on home page for now)
     client.connect(8002);
@@ -113,6 +126,80 @@ function run_collection(form) {
         btn.removeAttr("disabled");
     });
 }
+
+function l1nodes_srlg(form,btn,btn_text) {
+    var formdata = form.form2Dict();
+    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
+    btn.html(btn_spinner_html);
+    btn.attr("disabled","disabled");
+    var request={};
+    request['pool-name'] = formdata['pool-name'];
+    request['action'] = formdata['action'];
+    request['type'] = formdata['type'];
+    var fdns = [];
+    //TODO Learn how jQuery filtering works like in next line of code
+    $('#nodes_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
+//        var id=$(this).attr('id');
+        console.log(this.id);
+        fdns.push(this.id);
+    });
+    request['fdns'] = fdns;
+    console.log(request);
+    jQuery().postJSON("/ajax", request, function(response) {
+        console.log("Callback to assign-srrg request!");
+        console.log(response);
+        if (response.status == 'failed') {
+                $('#failed').show();
+        }
+        var newrequest = {};
+        newrequest['action'] = "get-l1nodes";
+        jQuery().postJSON("/ajax", newrequest, function(response) {
+            console.log("Callback to l1nodes srrg request!");
+            console.log(response);
+            $("#nodes_table thead").remove();
+            $("#nodes_table tbody").remove();
+            client.buildL1nodesTable(response);
+        });
+        btn.empty();
+        btn.text(btn_text);
+        btn.removeAttr("disabled");
+    });
+}
+
+//function l1nodes_unassign_srlg(form,btn,btn_text) {
+//    var formdata = form.form2Dict();
+//    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
+//    btn.html(btn_spinner_html);
+//    btn.attr("disabled","disabled");
+//    var request={};
+//    request['options'] = formdata['options'];
+//    request['action'] = formdata['action'];
+//    request['type'] = formdata['type'];
+//    var fdns = [];
+////    //TODO Learn how jQuery filtering works like in next line of code
+//    $('#nodes_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
+//        console.log(this.id);
+//        fdns.push(this.id);
+//    });
+//    request['fdns'] = fdns;
+//    console.log(request);
+//    jQuery().postJSON("/ajax", request, function(response) {
+//        console.log("Callback to unassign-srrg request!");
+//        console.log(response);
+//        var newrequest = {};
+//        newrequest['action'] = "get-l1nodes";
+//        jQuery().postJSON("/ajax", newrequest, function(response) {
+//            console.log("Callback to assign-srrg request!");
+//            console.log(response);
+//            $("#nodes_table th").remove();
+//            $("#nodes_table tr").remove();
+//            client.buildL1nodesTable(response);
+//        });
+//        btn.empty();
+//        btn.text(btn_text);
+//        btn.removeAttr("disabled");
+//    });
+//}
 
 function l1links_assign_srlg(form,btn,btn_text) {
     var formdata = form.form2Dict();
@@ -158,7 +245,7 @@ function l1links_unassign_srlg(form) {
     btn.html(btn_spinner_html);
     btn.attr("disabled","disabled");
     var request={};
-    request['options'] = formdata['options'];
+    request['type'] = formdata['type'];
     request['action'] = "unassign-srrg";
     var fdns = [];
 //    //TODO Learn how jQuery filtering works like in next line of code
@@ -349,33 +436,95 @@ var client = {
         });
     },
 
+//    buildL1nodesTable: function (l1nodes_data) {
+//        var pathname = window.location.pathname;
+//        var url = window.location.href;     // Returns full URL
+//        var origin   = window.location.origin;   // Returns base URL
+//        var table = $('#nodetable'), row = null, data = null;
+//        $('<th>Node Name</th><th>EPNM FDN</th><th>SRLGs</th>').appendTo(table);
+//        var l1nodes_data_json = JSON.parse(l1nodes_data);
+//        $.each(l1nodes_data_json, function(k1, v1) {
+//            var srrg = v1['srrgs'][0];
+//            try {
+//                var srrg_parsed = srrg.split('=')[2];
+//                var srrg_url = '<td><a href="'+origin+'/srlg/'+srrg_parsed+'" name = "'+srrg_parsed+'">'+srrg_parsed+'</a></td>';
+//            }
+//            catch (err) {
+//                var srrg_parsed = "none";
+//            }
+//            row = $('<tr></tr>');
+//            $('<td>'+v1['Name']+'</td>').appendTo(row);
+//            $('<td>'+v1['fdn']+'</td>').appendTo(row);
+//                        $(srrg_url).appendTo(row);
+//            row.appendTo(table);
+//        });
+//    },
     buildL1nodesTable: function (l1nodes_data) {
-        var pathname = window.location.pathname;
-        var url = window.location.href;     // Returns full URL
-        var origin   = window.location.origin;   // Returns base URL
-        var table = $('#nodetable'), row = null, data = null;
-        $('<th>Node Name</th><th>EPNM FDN</th><th>SRLGs</th>').appendTo(table);
+        var table = $('#nodes_table'), row = null, data = null;
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/Incorrect SRLGs</th></thead>');
+        thead.appendTo(table);
+        var tbody = $('<tbody></tbody>');
+        tbody.appendTo(table);
         var l1nodes_data_json = JSON.parse(l1nodes_data);
         $.each(l1nodes_data_json, function(k1, v1) {
-            var srrg = v1['srrgs'][0];
-            try {
-                var srrg_parsed = srrg.split('=')[2];
-                var srrg_url = '<td><a href="'+origin+'/srlg/'+srrg_parsed+'" name = "'+srrg_parsed+'">'+srrg_parsed+'</a></td>';
-            }
-            catch (err) {
-                var srrg_parsed = "none";
-            }
-            row = $('<tr></tr>');
+            var pathname = window.location.pathname;
+            var url      = window.location.href;     // Returns full URL
+            var origin   = window.location.origin;   // Returns base URL
+
+            var row = $('<tr id="'+v1['fdn']+'"></tr>');
+            var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+v1['fdn']+'"></td>';
+            $(checkbox_html).appendTo(row);
             $('<td>'+v1['Name']+'</td>').appendTo(row);
             $('<td>'+v1['fdn']+'</td>').appendTo(row);
-                        $(srrg_url).appendTo(row);
-            row.appendTo(table);
+
+            var parsed_url_list = [];
+            $.each(v1['srrgs'], function(k2,v2) {
+                var parsed = v2.split('=')[2];
+                parsed_url_list += '<a href="'+origin+'/srlg/'+parsed+'" name = "'+parsed+'">'+parsed+'</a></br>';
+            });
+            if (parsed_url_list.length > 0) {
+                var parsed_url = "<td>"+ parsed_url_list + "</td>";
+                $(parsed_url).appendTo(row);
+            }
+            else {
+                $('<td></td>').appendTo(row);
+            }
+
+            parsed_url_list = [];
+            $.each(v1['srrgs-incorrect'], function(k2,v2) {
+                var parsed = v2.split('=')[2];
+                parsed_url_list += '<a href="'+origin+'/srlg/'+parsed+'" name = "'+parsed+'">'+parsed+'</a></br>';
+            });
+            if (parsed_url_list.length > 0) {
+                var parsed_url = "<td>"+ parsed_url_list + "</td>";
+                $(parsed_url).appendTo(row);
+            }
+            else {
+                $('<td></td>').appendTo(row);
+            }
+            row.appendTo(tbody);
+        });
+        $('#select-all-nodes').click(function (e) {
+            $(this).closest('#nodes_table').find('td input:checkbox').prop('checked', this.checked);
+        });
+
+        $(".form-check-input").click(function (e) {
+            var btn_assign = $("#l1nodes-btn");
+            var btn_unassign = $("#l1nodes-unassign-btn");
+            if ($(".form-check-input").is(":checked")) {
+                btn_assign.prop('disabled', false);
+                btn_unassign.prop('disabled', false);
+            }
+            else {
+                btn_assign.prop('disabled', true);
+                btn_unassign.prop('disabled', true);
+            }
         });
     },
 
     buildL1linksTable: function (l1links_data) {
         var table = $('#links_table'), row = null, data = null;
-        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th>Node A</th><th>Node B</th><th>FDN</th><th>Degree SRLG</th><th>Conduit SRLGs</th><th>Incorrect SRLGs</th></thead>');
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th>Node A</th><th>Node B</th><th>FDN</th><th>Degree SRLG</th><th>Conduit SRLGs</th><th>Default/Incorrect SRLGs</th></thead>');
         thead.appendTo(table);
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
@@ -392,15 +541,6 @@ var client = {
             $('<td>'+v1['Nodes'][1]+'</td>').appendTo(row);
             $('<td>'+v1['fdn']+'</td>').appendTo(row);
 
-//            var srrg = v1['srrgs'][0];
-//            try {
-//                var srrg_parsed = srrg.split('=')[2];
-//                var srrg_url = '<td><a href="'+origin+'/srlg/'+srrg_parsed+'" name = "'+srrg_parsed+'">'+srrg_parsed+'</a></td>';
-//                $(srrg_url).appendTo(row);
-//            }
-//            catch (err) {
-//                var srrg_parsed = "none";
-//            }
             var parsed_url_list = [];
             $.each(v1['srrgs'], function(k2,v2) {
                 var parsed = v2.split('=')[2];
@@ -439,16 +579,35 @@ var client = {
             else {
                 $('<td></td>').appendTo(row);
             }
-
-//            $.each(v1['srrgs-conduit'], function(k2,v2) {
-//                var parsed = v2.split('=')[2];
-//                var parsed_url = '<td><a href="'+origin+'/srlg/'+parsed+'" name = "'+parsed+'">'+parsed+'</a></td>';
-//                $(parsed_url).appendTo(row);
-//            });
             row.appendTo(tbody);
         });
+
         $('#select-all-links').click(function (e) {
             $(this).closest('#links_table').find('td input:checkbox').prop('checked', this.checked);
+        });
+
+        //Handle enabling the submit button on L1links page when radio buttons are selected
+//        $("input[name='options']").on('change', function(){
+//            var btn = $("#l1links-unassign-btn");
+//            btn.prop('disabled', false);
+//        });
+
+        $(".form-check-input").click(function (e) {
+            var btn_assign_degree = $("#l1links-degree-btn");
+            var btn_assign_conduit = $("#l1links-conduit-btn");
+            var btn_unassign = $("#l1links-unassign-btn");
+            if ($(".form-check-input").is(":checked")) {
+                btn_assign_degree.prop('disabled', false);
+                btn_assign_conduit.prop('disabled', false);
+                if ($("input[name='type']").is(":checked")) {
+                    btn_unassign.prop('disabled', false);
+                }
+            }
+            else {
+                btn_assign_degree.prop('disabled', true);
+                btn_assign_conduit.prop('disabled', true);
+                btn_unassign.prop('disabled', true);
+            }
         });
     },
 

@@ -93,7 +93,7 @@ class AjaxHandler(tornado.web.RequestHandler):
                 srrg_type = request['type'][0]
                 if srrg_type == "conduit":
                     process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, link_fdn_list)
-                elif srrg_type == "degree":
+                elif srrg_type == "degree" or srrg_type == "l1node":
                     for fdn in link_fdn_list:
                         single_fdn_list = [fdn]
                         process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, single_fdn_list)
@@ -112,14 +112,18 @@ class AjaxHandler(tornado.web.RequestHandler):
                 self.write(json.dumps(response))
         elif action == 'unassign-srrg':
             try:
-                options = request['options'][0]
-                if options == 'conduit':
+                type = request['type'][0]
+                if type == 'conduit':
                     srrg_type = 'srrgs-conduit'
-                elif options == 'link':
+                elif type == 'link' or type == 'l1node':
                     srrg_type = 'srrgs'
-                link_fdn_list = request['fdns[]']
-                for fdn in link_fdn_list:
-                    process_srrgs.unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+                fdn_list = request['fdns[]']
+                if type == 'conduit' or type == 'link':
+                    for fdn in fdn_list:
+                        process_srrgs.unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+                elif type == 'l1node':
+                    for fdn in fdn_list:
+                        process_srrgs.unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
                 logging.info("Region is " + str(global_region))
@@ -132,6 +136,10 @@ class AjaxHandler(tornado.web.RequestHandler):
                 logging.warning("Exception during unassign-srrg operation!")
                 response = {'action': 'unassign-srrg', 'status': 'fail'}
                 self.write(json.dumps(response))
+        elif action == 'get-l1nodes':
+            l1nodes = methods.getl1nodes()
+            logging.info(l1nodes)
+            self.write(json.dumps(l1nodes))
         elif action == 'get-l1links':
             l1links = methods.getl1links()
             logging.info(l1links)
@@ -167,7 +175,8 @@ class L1NodesHandler(tornado.web.RequestHandler):
 
     def get(self):
         l1nodes = methods.getl1nodes()
-        self.render("templates/l1_nodes_template.html", port=args.port, l1nodes_data=l1nodes)
+        pools = methods.get_srrg_pools(1)
+        self.render("templates/l1_nodes_template.html", port=args.port, l1nodes_data=l1nodes, pools=pools)
 
 
 class L1LinksHandler(tornado.web.RequestHandler):
