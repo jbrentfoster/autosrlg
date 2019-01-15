@@ -47,6 +47,7 @@ class AjaxHandler(tornado.web.RequestHandler):
     async def post(self):
         global global_region
         global epnmipaddr
+        global baseURL
         global epnmuser
         global epnmpassword
         request = tornado.escape.recursive_unicode(self.request.arguments)
@@ -147,6 +148,7 @@ class AjaxHandler(tornado.web.RequestHandler):
         elif action == 'update-epnm':
             time.sleep(2)
             epnmipaddr = request['epnm-ip'][0]
+            baseURL = "https://" + epnmipaddr + "/restconf"
             epnmuser = request['epnm-user'][0]
             epnmpassword = request['epnm-pass'][0]
             region = request['region'][0]

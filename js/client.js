@@ -88,7 +88,7 @@
 //    TODO Add code to spin spinners on AJAX call
 
     //Open a websocket to the server (used only on home page for now)
-    client.connect(8002);
+//    client.connect(8002);
     console.log("Document ready!");
  });
 

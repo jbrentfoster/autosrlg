@@ -91,9 +91,10 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
         lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
+            merge(jsonmerged, jsonaddition)
         else:
             incomplete = False
-        merge(jsonmerged, jsonaddition)
+            merge(jsonmerged, jsonaddition)
 
     with open("jsongets/4k-nodes.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -142,9 +143,10 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
         lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
+            merge(jsonmerged, jsonaddition)
         else:
             incomplete = False
-        merge(jsonmerged, jsonaddition)
+            merge(jsonmerged, jsonaddition)
 
     with open("jsongets/l1-links.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -196,7 +198,7 @@ def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
             merge(jsonmerged, jsonaddition)
         else:
             incomplete = False
-        # merge(jsonmerged, jsonaddition)
+            merge(jsonmerged, jsonaddition)
 
     with open("jsongets/SRRGs.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -215,9 +217,10 @@ def collectSRRG_pools_json(baseURL, epnmuser, epnmpassword):
         lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
+            merge(jsonmerged, jsonaddition)
         else:
             incomplete = False
-        merge(jsonmerged, jsonaddition)
+            merge(jsonmerged, jsonaddition)
 
     with open("jsongets/SRRG_pools.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -244,9 +247,10 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
         lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
+            merge(jsonmerged, jsonaddition)
         else:
             incomplete = False
-        merge(jsonmerged, jsonaddition)
+            merge(jsonmerged, jsonaddition)
 
     with open("jsongets/topo-links.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
