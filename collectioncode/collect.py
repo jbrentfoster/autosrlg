@@ -48,7 +48,7 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
-    with open("jsongets/l1-nodes.json", 'rb') as f:
+    with open("jsongets/l1-nodes.json", 'r', encoding="utf8") as f:
         jsonresponse = f.read()
         f.close()
 
@@ -99,7 +99,7 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
-    with open("jsongets/4k-nodes.json", 'rb') as f:
+    with open("jsongets/4k-nodes.json", 'r', encoding="utf8") as f:
         jsonresponse = f.read()
         f.close()
 
@@ -150,7 +150,7 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
-    with open("jsongets/l1-links.json", 'rb') as f:
+    with open("jsongets/l1-links.json", 'r', encoding="utf8") as f:
         jsonresponse = f.read()
         f.close()
 
