@@ -10,7 +10,7 @@ def parse_ssrgs():
     srrg_types = ["Conduit", "Node", "Degree", "Add/Drop", "Switch", "Link", "Card", "Future", "Central Office",
                   "Future", "Future", "Future", "Future", "Future", "Future", "Future"]
 
-    with open("jsongets/SRRGs.json", 'rb') as f:
+    with open("jsongets/SRRGs.json", 'r', encoding="utf8") as f:
         srrgs = json.load(f)
         f.close()
 
@@ -36,7 +36,7 @@ def parse_ssrgs():
 
 
 def processl1nodes(region, type):
-    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+    with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)
         f.close()
 
@@ -68,7 +68,7 @@ def processl1nodes(region, type):
 
 
 def generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool):
-    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+    with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)
         f.close()
 
@@ -91,7 +91,7 @@ def generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool):
 
 def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
-    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+    with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)
         f.close()
 
@@ -108,7 +108,7 @@ def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
 
 def unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, node_fdn, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
-    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+    with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)
         f.close()
     for k1, v1 in l1nodes.items():
@@ -123,7 +123,7 @@ def unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, node_fdn, srrg
 
 
 def getNodeSRRGs(nodename):
-    with open("jsonfiles/SRRG_db.json", 'rb') as f:
+    with open("jsonfiles/SRRG_db.json", 'r', encoding="utf8") as f:
         srrgs = json.load(f)
         f.close()
     matched_srrgs = []
@@ -151,7 +151,7 @@ def getNodeSRRGs(nodename):
 
 
 def processl1links(region, type):
-    with open("jsonfiles/l1-links_db.json", 'rb') as f:
+    with open("jsonfiles/l1-links_db.json", 'r', encoding="utf8") as f:
         l1links = json.load(f)
         f.close()
 
@@ -188,7 +188,7 @@ def processl1links(region, type):
 
 
 def getLinkSRRGs(linkfdn):
-    with open("jsonfiles/SRRG_db.json", 'rb') as f:
+    with open("jsonfiles/SRRG_db.json", 'r', encoding="utf8") as f:
         srrgs = json.load(f)
         f.close()
     matched_srrgs = []
@@ -216,7 +216,7 @@ def getLinkSRRGs(linkfdn):
 
 
 def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
-    with open("jsonfiles/l1-links_db.json", 'rb') as f:
+    with open("jsonfiles/l1-links_db.json", 'r', encoding="utf8") as f:
         l1links = json.load(f)
         f.close()
 
@@ -249,7 +249,7 @@ def assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list):
 
 def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
-    with open("jsonfiles/l1-links_db.json", 'rb') as f:
+    with open("jsonfiles/l1-links_db.json", 'r', encoding="utf8") as f:
         l1links = json.load(f)
         f.close()
 
@@ -267,7 +267,7 @@ def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
 
 def unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, link_fdn, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
-    with open("jsonfiles/l1-links_db.json", 'rb') as f:
+    with open("jsonfiles/l1-links_db.json", 'r', encoding="utf8") as f:
         l1links = json.load(f)
         f.close()
     logging.info("Unassigning SRRGs for link: " + link_fdn)
@@ -283,7 +283,7 @@ def unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, link_fdn, srrg
 
 def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
-    with open("jsonfiles/topolinks_add_drop_db.json", 'rb') as f:
+    with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
         topolinks = json.load(f)
         f.close()
 
@@ -300,7 +300,7 @@ def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
 
 
 def processtopolinks(region):
-    with open("jsonfiles/topolinks_add_drop_db.json", 'rb') as f:
+    with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
         topolinks = json.load(f)
         f.close()
 
@@ -337,7 +337,7 @@ def processtopolinks(region):
 
 
 def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
-    with open("jsonfiles/l1-nodes_db.json", 'rb') as f:
+    with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)
         f.close()
 
@@ -348,7 +348,7 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
         #     continue
         fdn_a_list = []
         fdn_b_list = []
-        with open("jsonfiles/topolinks_add_drop_db.json", 'rb') as f:
+        with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
             topolinks = json.load(f)
             f.close()
             for key1, val1 in topolinks.items():
@@ -392,7 +392,7 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
 
 
 def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
-    with open("jsonfiles/4k-nodes_db.json", 'rb') as f:
+    with open("jsonfiles/4k-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)
         f.close()
 
@@ -403,7 +403,7 @@ def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
         #     continue
         fdn_a_list = []
         fdn_b_list = []
-        with open("jsonfiles/topolinks_add_drop_db.json", 'rb') as f:
+        with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
             topolinks = json.load(f)
             f.close()
             for key1, val1 in topolinks.items():
