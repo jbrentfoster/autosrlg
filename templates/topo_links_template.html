@@ -3,6 +3,69 @@
 {% block content %}
 <h3>Topological Links</h3>
 <p>Includes Add/Drop and Line Card SRLGs</p>
+<div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Failed!</strong> The request to the server failed.  Try again.
+</div>
+<form id="topolinks-add-drop-form">
+    <div><input type="hidden" name="type" value="add-drop"></div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <select class="form-control" name="pool-name" id="region-select">
+                <!--<option>Region 4 ROADM Degree</option>-->
+                <!--<option>Region 4 Conduit</option>-->
+                {% for pool in add_drop_pools %}
+                {% block pool %}
+                <option>{{ escape(pool) }}</option>
+                {% end %}
+                {% end %}
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <button type="submit" class="btn btn-success" style="width: 75%" id="topolinks-add-drop-btn" disabled>
+                <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
+                Assign Add/Drop
+            </button>
+        </div>
+    </div>
+</form>
+<form id="topolinks-card-form">
+    <div><input type="hidden" name="type" value="card"></div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <select class="form-control" name="pool-name" id="region-select">
+                <!--<option>Region 4 ROADM Degree</option>-->
+                <!--<option>Region 4 Conduit</option>-->
+                {% for pool in card_pools %}
+                {% block pool %}
+                <option>{{ escape(pool) }}</option>
+                {% end %}
+                {% end %}
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <button type="submit" class="btn btn-success" style="width: 75%" id="topolinks-card-btn" disabled>
+                <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
+                Assign Card
+            </button>
+        </div>
+    </div>
+</form>
+<form id="topolinks-unassign-form">
+    <div class="form-row">
+        <div class="form-group col-md-5">
+            <button type="submit" class="btn btn-success" id="topolinks-unassign-btn" disabled>
+                Unassign
+            </button>
+            <div class="btn-group" data-toggle="buttons">
+                <label label-default="" class="btn btn-default">
+                    <input id="option1" name="type" type="radio" value="link"/>Add/Drop</label>
+                <label label-default="" class="btn btn-default">
+                    <input id="option2" name="type" type="radio" value="conduit"/>Card</label>
+            </div>
+        </div>
+    </div>
+</form>
 
 <div class="table" id="tablediv">
     <table id="topo_links_table"></table>

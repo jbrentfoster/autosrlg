@@ -17,10 +17,13 @@ def get_srrg_pools(pool_type):
     with open("jsongets/SRRG_pools.json", 'r', encoding="utf8") as f:
         pools = json.load(f)
         f.close()
-    for pool in pools['com.response-message']['com.data']['srrg.srrg-pool-attributes']:
-        if pool['srrg.type-id'] == pool_type:
-            srrg_pools.append(pool['srrg.name'])
-    return srrg_pools
+    try:
+        for pool in pools['com.response-message']['com.data']['srrg.srrg-pool-attributes']:
+            if pool['srrg.type-id'] == pool_type:
+                srrg_pools.append(pool['srrg.name'])
+        return srrg_pools
+    except Exception as err:
+        return ['No SRLG Pool Defined']
 
 
 def getsrlg(srlg):

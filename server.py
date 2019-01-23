@@ -2,6 +2,7 @@
 Creates an HTTP server with basic websocket communication.
 """
 import argparse
+from datetime import datetime
 import json
 import os
 import traceback
@@ -27,7 +28,7 @@ import time
 # epnmipaddr = args.epnm_ipaddr
 # epnmuser = args.epnm_user
 # epnmpassword = args.epnm_pass
-epnmipaddr = "10.135.7.222"
+epnmipaddr = "10.135.7.223"
 baseURL = "https://" + epnmipaddr + "/restconf"
 epnmuser = "root"
 epnmpassword = "Epnm1234"
@@ -37,9 +38,16 @@ global_region = 1
 
 class IndexHandler(tornado.web.RequestHandler):
 
-    def get(self):
+    async def get(self):
         self.render("templates/index.html", port=args.port, epnm_ip=epnmipaddr, epnm_user=epnmuser,
                     epnm_pass=epnmpassword, region=global_region)
+
+    # async def get(self):
+    #     http = tornado.httpclient.AsyncHTTPClient()
+    #     response = await http.fetch("http://friendfeed-api.com/v2/feed/bret")
+    #     json = tornado.escape.json_decode(response.body)
+    #     self.write("Fetched " + str(len(json["entries"])) + " entries "
+    #                "from the FriendFeed API")
 
 
 class AjaxHandler(tornado.web.RequestHandler):
@@ -59,14 +67,12 @@ class AjaxHandler(tornado.web.RequestHandler):
             logging.warning("Invalid AJAX request")
             logging.warning(err)
             response = {'status': 'failed', 'error': err}
+            logging.info(response)
             self.write(json.dumps(response))
 
         if action == 'collect':
             try:
-                # region = request['region'][0]
                 srlg_only = request['srlg-only'][0]
-                # region_int = int(region)
-                # global_region = region_int
                 self.send_message_open_ws("Collecting data from EPNM...")
                 if srlg_only == 'on':
                     collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
@@ -79,14 +85,30 @@ class AjaxHandler(tornado.web.RequestHandler):
                 process_srrgs.processl1nodes(region=global_region, type="Node")
                 process_srrgs.processl1links(region=global_region, type="Degree")
                 process_srrgs.processtopolinks(region=global_region)
+                self.send_message_open_ws("Completed collecting data from EPNM...")
                 response = {'action': 'collect', 'status': 'completed'}
                 logging.info(response)
                 self.write(json.dumps(response))
             except Exception as err:
-                logging.info("Exception caught!!!")
-                logging.info(err)
-                response = {'action': 'collect', 'status': 'failed'}
-                self.write(json.dumps(response))
+                try:
+                    # exc_info = sys.exc_info()
+                    # do you usefull stuff here
+                    # (potentially raising an exception)
+                    logging.info("Exception caught!!!")
+                    logging.info(err)
+                    response = {'action': 'collect', 'status': 'failed'}
+                    self.write(json.dumps(response))
+                    # try:
+                    #     raise TypeError("Again !?!")
+                    # except:
+                    #     pass
+                    # end of useful stuff
+                finally:
+                    # Display the *original* exception
+                    traceback.print_tb(err.__traceback__)
+                    # traceback.print_exception(*exc_info)
+                    # del exc_info
+
         elif action == 'assign-srrg':
             try:
                 pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name'][0]
@@ -105,11 +127,13 @@ class AjaxHandler(tornado.web.RequestHandler):
                 process_srrgs.processl1links(region=global_region, type="Degree")
                 process_srrgs.processtopolinks(region=global_region)
                 response = {'action': 'assign-srrg', 'status': 'completed'}
+                logging.info(response)
                 self.write(json.dumps(response))
             except Exception as err:
                 logging.info("Exception caught!!!")
                 logging.info(err)
                 response = {'action': 'assign-srrg', 'status': 'failed'}
+                logging.info(response)
                 self.write(json.dumps(response))
         elif action == 'unassign-srrg':
             try:
@@ -132,18 +156,20 @@ class AjaxHandler(tornado.web.RequestHandler):
                 process_srrgs.processl1links(region=global_region, type="Degree")
                 process_srrgs.processtopolinks(region=global_region)
                 response = {'action': 'unassign-srrg', 'status': 'success'}
+                logging.info(response)
                 self.write(json.dumps(response))
             except Exception as err:
                 logging.warning("Exception during unassign-srrg operation!")
-                response = {'action': 'unassign-srrg', 'status': 'fail'}
+                response = {'action': 'unassign-srrg', 'status': 'failed'}
+                logging.info(response)
                 self.write(json.dumps(response))
         elif action == 'get-l1nodes':
             l1nodes = methods.getl1nodes()
-            logging.info(l1nodes)
+            # logging.info(l1nodes)
             self.write(json.dumps(l1nodes))
         elif action == 'get-l1links':
             l1links = methods.getl1links()
-            logging.info(l1links)
+            # logging.info(l1links)
             self.write(json.dumps(l1links))
         elif action == 'update-epnm':
             time.sleep(2)
@@ -155,10 +181,12 @@ class AjaxHandler(tornado.web.RequestHandler):
             region_int = int(region)
             global_region = region_int
             response = {'action': 'update-epnm', 'status': 'success'}
+            logging.info(response)
             self.write(json.dumps(response))
         else:
             logging.warning("Received request for unknown operation!")
             response = {'status': 'unknown', 'error': "unknown request"}
+            logging.info(response)
             self.write(json.dumps(response))
 
     def send_message_open_ws(self, message):
@@ -178,6 +206,8 @@ class L1NodesHandler(tornado.web.RequestHandler):
     def get(self):
         l1nodes = methods.getl1nodes()
         pools = methods.get_srrg_pools(1)
+        # if len(pools) == 0:
+        #     pools = ['No Node SRLG Pools Defined']
         self.render("templates/l1_nodes_template.html", port=args.port, l1nodes_data=l1nodes, pools=pools)
 
 
@@ -189,15 +219,23 @@ class L1LinksHandler(tornado.web.RequestHandler):
         # base_full_url = self.request.protocol + "://" + self.request.host
         l1links = methods.getl1links()
         conduit_pools = methods.get_srrg_pools(0)
+        # if len(conduit_pools) == 0:
+        #     conduit_pools = ['No Conduit SRLG Pools Defined']
         degree_pools = methods.get_srrg_pools(2)
-        self.render("templates/l1_links_template.html", port=args.port, degree_pools=degree_pools, conduit_pools=conduit_pools, l1links_data=l1links)
+        # if len(degree_pools) == 0:
+        #     degree_pools = ['No Degree SRLG Pools Defined']
+        self.render("templates/l1_links_template.html", port=args.port, degree_pools=degree_pools,
+                    conduit_pools=conduit_pools, l1links_data=l1links)
 
 
 class TopoLinksHandler(tornado.web.RequestHandler):
 
     def get(self):
         topo_links = methods.gettopolinks()
-        self.render("templates/topo_links_template.html", port=args.port, topo_links_data=topo_links)
+        add_drop_pools = methods.get_srrg_pools(3)
+        card_pools = methods.get_srrg_pools(6)
+        self.render("templates/topo_links_template.html", port=args.port, topo_links_data=topo_links,
+                    add_drop_pools=add_drop_pools, card_pools=card_pools)
 
 
 class WebSocket(tornado.websocket.WebSocketHandler):
@@ -258,6 +296,8 @@ def main():
     rootLogger.addHandler(consoleHandler)
 
     logging.info("Starting webserver...")
+    current_time = str(datetime.now().strftime('%Y-%m-%d-%H%M-%S'))
+    logging.info("Current time is: " + current_time)
     settings = {
         # "static_path": os.path.join(os.path.dirname(__file__), "static"),
         "static_path": os.path.normpath(os.path.dirname(__file__)),
@@ -288,7 +328,8 @@ def main():
 
     # webbrowser.open("http://localhost:%d/" % args.port, new=2)
 
-    tornado.ioloop.IOLoop.instance().start()
+    # tornado.ioloop.IOLoop.instance().start()
+    tornado.ioloop.IOLoop.current().start()
 
 
 def clean_files():

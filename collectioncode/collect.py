@@ -40,9 +40,12 @@ def collectL1Nodes_json(baseURL, epnmuser, epnmpassword):
         lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
+            merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
         else:
             incomplete = False
-        merge(jsonmerged, jsonaddition)
+            merge(jsonmerged, jsonaddition)
 
     with open("jsongets/l1-nodes.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -92,6 +95,8 @@ def collect4kNodes_json(baseURL, epnmuser, epnmpassword):
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
             merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
         else:
             incomplete = False
             merge(jsonmerged, jsonaddition)
@@ -144,6 +149,8 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
             merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
         else:
             incomplete = False
             merge(jsonmerged, jsonaddition)
@@ -196,6 +203,8 @@ def collectSRRGs_json(baseURL, epnmuser, epnmpassword):
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
             merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
         else:
             incomplete = False
             merge(jsonmerged, jsonaddition)
@@ -218,6 +227,8 @@ def collectSRRG_pools_json(baseURL, epnmuser, epnmpassword):
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
             merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
         else:
             incomplete = False
             merge(jsonmerged, jsonaddition)
@@ -248,6 +259,8 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
         if (lastindex - firstindex) == 99 and lastindex != -1:
             startindex += 100
             merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
         else:
             incomplete = False
             merge(jsonmerged, jsonaddition)
@@ -255,6 +268,10 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
     with open("jsongets/topo-links.json", 'w', encoding="utf8") as f:
         # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
         json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
+        f.close()
+
+    with open("jsongets/topo-links.json", 'r', encoding="utf8") as f:
+        jsonresponse = f.read()
         f.close()
 
     thejson = json.loads(jsonresponse)
@@ -303,9 +320,17 @@ def merge(a, b):
     "merges b into a"
     for key in b:
         if key in a:  # if key is in both a and b
+            # if isinstance(a[key],dict):
+            #     logging.info("a[key] is a dict.")
+            # elif isinstance(a[key],list):
+            #     logging.info("a[key] is a list.")
+            # if isinstance(b[key],dict):
+            #     logging.info("b[key] is a dict.")
+            # elif isinstance(b[key],list):
+            #     logging.info("b[key] is a list.")
             if isinstance(a[key], dict) and isinstance(b[key], dict):  # if the key is dict Object
                 merge(a[key], b[key])
-            else:
+            elif isinstance(a[key], list) and isinstance(b[key], list):
                 a[key] = a[key] + b[key]
         else:  # if the key is not in dict a , add it to dict a
             a.update({key: b[key]})

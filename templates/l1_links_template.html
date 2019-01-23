@@ -4,9 +4,13 @@
 {% block content %}
 <h3>L1 Links/Degrees</h3>
 <p>Current L1 degree SRLGs</p>
-
+<div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Failed!</strong> The request to the server failed.  Try again.
+</div>
 <form id="l1links-degree-form">
     <div><input type="hidden" name="type" value="degree"></div>
+    <div><input type="hidden" name="action" value="assign-srrg"></div>
     <div class="form-row">
         <div class="form-group col-md-3">
             <select class="form-control" name="pool-name" id="region-select">
@@ -20,7 +24,7 @@
             </select>
         </div>
         <div class="form-group col-md-3">
-            <button type="submit" class="btn btn-success" id="l1links-degree-btn" disabled>
+            <button type="submit" class="btn btn-success" style="width: 75%" id="l1links-degree-btn" disabled>
                 <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
                 Assign Degree
             </button>
@@ -29,6 +33,7 @@
 </form>
 <form id="l1links-conduit-form">
     <div><input type="hidden" name="type" value="conduit"></div>
+    <div><input type="hidden" name="action" value="assign-srrg"></div>
     <div class="form-row">
         <div class="form-group col-md-3">
             <select class="form-control" name="pool-name" id="region-select">
@@ -42,7 +47,7 @@
             </select>
         </div>
         <div class="form-group col-md-3">
-            <button type="submit" class="btn btn-success" id="l1links-conduit-btn" disabled>
+            <button type="submit" class="btn btn-success" style="width: 75%" id="l1links-conduit-btn" disabled>
                 <!--<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>-->
                 Assign Conduit
             </button>
@@ -50,9 +55,10 @@
     </div>
 </form>
 <form id="l1links-unassign-form">
+    <div><input type="hidden" name="action" value="unassign-srrg"></div>
     <div class="form-row">
         <div class="form-group col-md-5">
-            <button type="submit" class="btn btn-success" id="l1links-unassign-btn" disabled>
+            <button type="submit" class="btn btn-success" style="width: 33%" id="l1links-unassign-btn" disabled>
                 Unassign
             </button>
             <div class="btn-group" data-toggle="buttons">
@@ -70,15 +76,6 @@
 </div>
 <script type="text/javascript">
     client.buildL1linksTable('{{ l1links_data }}');
-
-
-
-
-
-
-
-
-
 </script>
 
 {% end %}

@@ -28,10 +28,6 @@
         buttonpressed = $(this);
     });
 
-    $("#l1links-degree-btn").on("click", function() {
-        buttonpressed = $(this);
-    });
-
     $("#update-btn").on("click", function() {
         buttonpressed = $(this);
     });
@@ -62,20 +58,21 @@
     $("#l1links-degree-form").on("submit", function() {
         console.log("L1Links degree assign button called from form submit!");
         btn_text = buttonpressed.text();
-        l1links_assign_srlg($(this),buttonpressed,btn_text);
+        l1links_srlg($(this),buttonpressed,btn_text);
         return false;
     });
 
     $("#l1links-conduit-form").on("submit", function() {
         console.log("L1Links conduit assign button called from form submit!");
         btn_text = buttonpressed.text();
-        l1links_assign_srlg($(this),buttonpressed,btn_text);
+        l1links_srlg($(this),buttonpressed,btn_text);
         return false;
     });
 
     $("#l1links-unassign-form").on("submit", function() {
         console.log("L1Links unassign button called from form submit!");
-        l1links_unassign_srlg($(this));
+        btn_text = buttonpressed.text();
+        l1links_srlg($(this),buttonpressed,btn_text);
         return false;
     });
 
@@ -84,6 +81,12 @@
         btn_text = buttonpressed.text();
         epnm_update($(this),buttonpressed,btn_text);
         return false;
+    });
+
+    $(function(){
+        $("[data-hide]").on("click", function(){
+            $(this).closest("." + $(this).attr("data-hide")).hide();
+        });
     });
 //    TODO Add code to spin spinners on AJAX call
 
@@ -155,7 +158,7 @@ function l1nodes_srlg(form,btn,btn_text) {
         newrequest['action'] = "get-l1nodes";
         jQuery().postJSON("/ajax", newrequest, function(response) {
             console.log("Callback to l1nodes srrg request!");
-            console.log(response);
+//            console.log(response);
             $("#nodes_table thead").remove();
             $("#nodes_table tbody").remove();
             client.buildL1nodesTable(response);
@@ -166,55 +169,17 @@ function l1nodes_srlg(form,btn,btn_text) {
     });
 }
 
-//function l1nodes_unassign_srlg(form,btn,btn_text) {
-//    var formdata = form.form2Dict();
-//    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
-//    btn.html(btn_spinner_html);
-//    btn.attr("disabled","disabled");
-//    var request={};
-//    request['options'] = formdata['options'];
-//    request['action'] = formdata['action'];
-//    request['type'] = formdata['type'];
-//    var fdns = [];
-////    //TODO Learn how jQuery filtering works like in next line of code
-//    $('#nodes_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
-//        console.log(this.id);
-//        fdns.push(this.id);
-//    });
-//    request['fdns'] = fdns;
-//    console.log(request);
-//    jQuery().postJSON("/ajax", request, function(response) {
-//        console.log("Callback to unassign-srrg request!");
-//        console.log(response);
-//        var newrequest = {};
-//        newrequest['action'] = "get-l1nodes";
-//        jQuery().postJSON("/ajax", newrequest, function(response) {
-//            console.log("Callback to assign-srrg request!");
-//            console.log(response);
-//            $("#nodes_table th").remove();
-//            $("#nodes_table tr").remove();
-//            client.buildL1nodesTable(response);
-//        });
-//        btn.empty();
-//        btn.text(btn_text);
-//        btn.removeAttr("disabled");
-//    });
-//}
-
-function l1links_assign_srlg(form,btn,btn_text) {
+function l1links_srlg(form,btn,btn_text) {
     var formdata = form.form2Dict();
-//    var btn = $("#l1links-btn");
     var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
     btn.html(btn_spinner_html);
     btn.attr("disabled","disabled");
     var request={};
     request['pool-name'] = formdata['pool-name'];
-    request['action'] = "assign-srrg";
+    request['action'] = formdata['action'];
     request['type'] = formdata['type'];
     var fdns = [];
-    //TODO Learn how jQuery filtering works like in next line of code
     $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
-//        var id=$(this).attr('id');
         console.log(this.id);
         fdns.push(this.id);
     });
@@ -223,11 +188,14 @@ function l1links_assign_srlg(form,btn,btn_text) {
     jQuery().postJSON("/ajax", request, function(response) {
         console.log("Callback to assign-srrg request!");
         console.log(response);
+        if (response.status == 'failed') {
+                $('#failed').show();
+        }
         var newrequest = {};
         newrequest['action'] = "get-l1links";
         jQuery().postJSON("/ajax", newrequest, function(response) {
-            console.log("Callback to assign-srrg request!");
-            console.log(response);
+//            console.log("Callback to assign-srrg request!");
+//            console.log(response);
             $("#links_table thead").remove();
             $("#links_table tbody").remove();
             client.buildL1linksTable(response);
@@ -238,41 +206,85 @@ function l1links_assign_srlg(form,btn,btn_text) {
     });
 }
 
-function l1links_unassign_srlg(form) {
-    var formdata = form.form2Dict();
-    var btn = $("#l1links-unassign-btn");
-    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>Unassign';
-    btn.html(btn_spinner_html);
-    btn.attr("disabled","disabled");
-    var request={};
-    request['type'] = formdata['type'];
-    request['action'] = "unassign-srrg";
-    var fdns = [];
+
+//function l1links_assign_srlg(form,btn,btn_text) {
+//    var formdata = form.form2Dict();
+////    var btn = $("#l1links-btn");
+//    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
+//    btn.html(btn_spinner_html);
+//    btn.attr("disabled","disabled");
+//    var request={};
+//    request['pool-name'] = formdata['pool-name'];
+//    request['action'] = "assign-srrg";
+//    request['type'] = formdata['type'];
+//    var fdns = [];
 //    //TODO Learn how jQuery filtering works like in next line of code
-    $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
-//        var id=$(this).attr('id');
-        console.log(this.id);
-        fdns.push(this.id);
-    });
-    request['fdns'] = fdns;
-    console.log(request);
-    jQuery().postJSON("/ajax", request, function(response) {
-        console.log("Callback to unassign-srrg request!");
-        console.log(response);
-        var newrequest = {};
-        newrequest['action'] = "get-l1links";
-        jQuery().postJSON("/ajax", newrequest, function(response) {
-            console.log("Callback to assign-srrg request!");
-            console.log(response);
-            $("#links_table th").remove();
-            $("#links_table tr").remove();
-            client.buildL1linksTable(response);
-        });
-        btn.empty();
-        btn.text("Unassign");
-        btn.removeAttr("disabled");
-    });
-}
+//    $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
+////        var id=$(this).attr('id');
+//        console.log(this.id);
+//        fdns.push(this.id);
+//    });
+//    request['fdns'] = fdns;
+//    console.log(request);
+//    jQuery().postJSON("/ajax", request, function(response) {
+//        console.log("Callback to assign-srrg request!");
+//        console.log(response);
+//        if (response.status == 'failed') {
+//                $('#failed').show();
+//        }
+//        var newrequest = {};
+//        newrequest['action'] = "get-l1links";
+//        jQuery().postJSON("/ajax", newrequest, function(response) {
+//            console.log("Callback to assign-srrg request!");
+////            console.log(response);
+//            $("#links_table thead").remove();
+//            $("#links_table tbody").remove();
+//            client.buildL1linksTable(response);
+//        });
+//        btn.empty();
+//        btn.text(btn_text);
+//        btn.removeAttr("disabled");
+//    });
+//}
+//
+//function l1links_unassign_srlg(form) {
+//    var formdata = form.form2Dict();
+//    var btn = $("#l1links-unassign-btn");
+//    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>Unassign';
+//    btn.html(btn_spinner_html);
+//    btn.attr("disabled","disabled");
+//    var request={};
+//    request['type'] = formdata['type'];
+//    request['action'] = "unassign-srrg";
+//    var fdns = [];
+////    //TODO Learn how jQuery filtering works like in next line of code
+//    $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
+////        var id=$(this).attr('id');
+//        console.log(this.id);
+//        fdns.push(this.id);
+//    });
+//    request['fdns'] = fdns;
+//    console.log(request);
+//    jQuery().postJSON("/ajax", request, function(response) {
+//        console.log("Callback to unassign-srrg request!");
+//        console.log(response);
+//        if (response.status == 'failed') {
+//                $('#failed').show();
+//        }
+//        var newrequest = {};
+//        newrequest['action'] = "get-l1links";
+//        jQuery().postJSON("/ajax", newrequest, function(response) {
+////            console.log("Callback to assign-srrg request!");
+////            console.log(response);
+//            $("#links_table th").remove();
+//            $("#links_table tr").remove();
+//            client.buildL1linksTable(response);
+//        });
+//        btn.empty();
+//        btn.text("Unassign");
+//        btn.removeAttr("disabled");
+//    });
+//}
 
 //jQuery extended functions defined...
 jQuery.fn.extend({
@@ -399,66 +411,87 @@ var client = {
 
     buildtopolinkstable: function (topo_link_data) {
         var table = $('#topo_links_table'), row = null, data = null;
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Add/Drop SRLGs</th><th>Line Card SRLGs</th><th>Incorrect SRLGs</th></thead>');
+        thead.appendTo(table);
+        var tbody = $('<tbody></tbody>');
+        tbody.appendTo(table);
         var origin   = window.location.origin;   // Returns base URL
-        $('<th onclick="javascript:client.sortTable(0,\'topo_links_table\')">Node A</th> \
-        <th onclick="javascript:client.sortTable(1,\'topo_links_table\')">Node B</th> \
-        <th onclick="javascript:client.sortTable(2,\'topo_links_table\')">fdn</th> \
-        <th onclick="javascript:client.sortTable(3,\'topo_links_table\')">Add/Drop SRLG</th> \
-        <th onclick="javascript:client.sortTable(4,\'topo_links_table\')">Line Card SRLG</th>').appendTo(table);
+//        $('<th onclick="javascript:client.sortTable(0,\'topo_links_table\')">Node A</th> \
+//        <th onclick="javascript:client.sortTable(1,\'topo_links_table\')">Node B</th> \
+//        <th onclick="javascript:client.sortTable(2,\'topo_links_table\')">fdn</th> \
+//        <th onclick="javascript:client.sortTable(3,\'topo_links_table\')">Add/Drop SRLG</th> \
+//        <th onclick="javascript:client.sortTable(4,\'topo_links_table\')">Line Card SRLG</th>').appendTo(table);
         var topo_link_data_json = JSON.parse(topo_link_data);
         $.each(topo_link_data_json, function(k1, v1) {
             var node_a = "<td>"+v1['Nodes'][0]['node'] + "/" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
             var node_b = "<td>"+v1['Nodes'][1]['node'] + "/" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
             var fdn = "<td>"+v1['fdn'].split('=')[2]+"</td>";
-            row = $('<tr></tr>');
+            var row = $('<tr id="'+v1['fdn']+'"></tr>');
+            var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+ fdn +'"></td>';
+            $(checkbox_html).appendTo(row);
             $(node_a).appendTo(row);
             $(node_b).appendTo(row);
             $(fdn).appendTo(row);
+
             try {
                 var srrg_ad = v1['srrgs-ad'][0].split('=')[2];
                 var srrg_ad_url = '<td><a href="'+origin+'/srlg/'+srrg_ad+'" name = "'+srrg_ad+'">'+srrg_ad+'</a></td>';
                 $(srrg_ad_url).appendTo(row);
             }
             catch {
-                console.log("No AD SRRG!");
+//                console.log("No AD SRRG!");
                 $('<td></td>').appendTo(row);
             }
+
             try {
                 var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
                 var srrg_lc_url = '<td><a href="'+origin+'/srlg/'+srrg_lc+'" name = "'+srrg_lc+'">'+srrg_lc+'</a></td>';
                 $(srrg_lc_url).appendTo(row);
             }
             catch {
-                console.log("No LC SRRG!");
+//                console.log("No LC SRRG!");
                 $('<td></td>').appendTo(row);
             }
-            row.appendTo(table);
+
+            parsed_url_list = [];
+            $.each(v1['srrgs-incorrect'], function(k2,v2) {
+                var parsed = v2.split('=')[2];
+                parsed_url_list += '<a href="'+origin+'/srlg/'+parsed+'" name = "'+parsed+'">'+parsed+'</a></br>';
+            });
+            if (parsed_url_list.length > 0) {
+                var parsed_url = "<td>"+ parsed_url_list + "</td>";
+                $(parsed_url).appendTo(row);
+            }
+            else {
+                $('<td></td>').appendTo(row);
+            }
+
+            row.appendTo(tbody);
+        });
+
+        $('#select-all-links').click(function (e) {
+            $(this).closest('#topo_links_table').find('td input:checkbox').prop('checked', this.checked);
+        });
+
+        $(".form-check-input").click(function (e) {
+            var btn_assign_degree = $("#topolinks-add-drop-btn");
+            var btn_assign_conduit = $("#topolinks-card-btn");
+            var btn_unassign = $("#topolinks-unassign-btn");
+            if ($(".form-check-input").is(":checked")) {
+                btn_assign_degree.prop('disabled', false);
+                btn_assign_conduit.prop('disabled', false);
+                if ($("input[name='type']").is(":checked")) {
+                    btn_unassign.prop('disabled', false);
+                }
+            }
+            else {
+                btn_assign_degree.prop('disabled', true);
+                btn_assign_conduit.prop('disabled', true);
+                btn_unassign.prop('disabled', true);
+            }
         });
     },
 
-//    buildL1nodesTable: function (l1nodes_data) {
-//        var pathname = window.location.pathname;
-//        var url = window.location.href;     // Returns full URL
-//        var origin   = window.location.origin;   // Returns base URL
-//        var table = $('#nodetable'), row = null, data = null;
-//        $('<th>Node Name</th><th>EPNM FDN</th><th>SRLGs</th>').appendTo(table);
-//        var l1nodes_data_json = JSON.parse(l1nodes_data);
-//        $.each(l1nodes_data_json, function(k1, v1) {
-//            var srrg = v1['srrgs'][0];
-//            try {
-//                var srrg_parsed = srrg.split('=')[2];
-//                var srrg_url = '<td><a href="'+origin+'/srlg/'+srrg_parsed+'" name = "'+srrg_parsed+'">'+srrg_parsed+'</a></td>';
-//            }
-//            catch (err) {
-//                var srrg_parsed = "none";
-//            }
-//            row = $('<tr></tr>');
-//            $('<td>'+v1['Name']+'</td>').appendTo(row);
-//            $('<td>'+v1['fdn']+'</td>').appendTo(row);
-//                        $(srrg_url).appendTo(row);
-//            row.appendTo(table);
-//        });
-//    },
     buildL1nodesTable: function (l1nodes_data) {
         var table = $('#nodes_table'), row = null, data = null;
         var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/Incorrect SRLGs</th></thead>');
