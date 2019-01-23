@@ -82,7 +82,7 @@ def generatel1node_srrgs(baseURL, epnmuser, epnmpassword, pool):
             logging.info("Node has more than one SRRG: ")
             logging.info(v1['srrgs'])
         else:
-            usrlabel = v1['Name'] + "-" + str(random.randint(1, 1001))
+            usrlabel = v1['Name'] + " " + str(random.randint(1, 1001))
             description = "Automated by Python."
             respool = pool
             rsfdn = "<p:resource-fdn>" + v1['fdn'] + "</p:resource-fdn>"
@@ -230,7 +230,7 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
             logging.info("Node has more than one SRRG: ")
             logging.info(v1['srrgs'])
         else:
-            usrlabel = "Link SRRG - " + str(random.randint(1, 10001))
+            usrlabel = "Link SRRG " + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
             rsfdn = "<p:resource-fdn>" + v1['fdn'] + "</p:resource-fdn>"
@@ -238,7 +238,7 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
 
 
 def assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list):
-    usrlabel = "Conduit SRRG - " + str(random.randint(1, 10001))
+    usrlabel = "Conduit SRRG " + str(random.randint(1, 10001))
     description = "Automated by Python."
     respool = pool
     xml_fdn_list = ""
@@ -368,9 +368,9 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
             print ("Topo links for PSLINE-81-1")
             xml_fdn_list = ""
             for fdn in fdn_a_list:
-                xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE-81-1'] + "</p:resource-fdn>" + "\n"
+                xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE 81 1'] + "</p:resource-fdn>" + "\n"
             print (xml_fdn_list)
-            usrlabel = "Add/Drop Node " + v1['Name'] + "  PSLINE-81-1-" + str(random.randint(1, 10001))
+            usrlabel = "Add Drop Node " + v1['Name'] + "  PSLINE 81 1 " + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
@@ -381,9 +381,9 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
             print ("Topo links for PSLINE-81-2")
             xml_fdn_list = ""
             for fdn in fdn_b_list:
-                xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE-81-2'] + "</p:resource-fdn>" + "\n"
+                xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE 81 2'] + "</p:resource-fdn>" + "\n"
             print (xml_fdn_list)
-            usrlabel = "Add/Drop Node " + v1['Name'] + "  PSLINE-81-2-" + str(random.randint(1, 10001))
+            usrlabel = "Add Drop Node " + v1['Name'] + "  PSLINE 81 2 " + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)

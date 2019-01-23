@@ -120,6 +120,7 @@ class AjaxHandler(tornado.web.RequestHandler):
                     for fdn in link_fdn_list:
                         single_fdn_list = [fdn]
                         process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, single_fdn_list)
+                time.sleep(2)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
                 logging.info("Region is " + str(global_region))
@@ -149,6 +150,7 @@ class AjaxHandler(tornado.web.RequestHandler):
                 elif type == 'l1node':
                     for fdn in fdn_list:
                         process_srrgs.unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+                time.sleep(2)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
                 logging.info("Region is " + str(global_region))
