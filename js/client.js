@@ -120,6 +120,12 @@ function run_collection(form) {
     $("#updatefield").append("Requesting SRLG collection...</br>");
     jQuery().postJSON("/ajax", message, function(response) {
         console.log("Callback!!!");
+        if (response.status == 'failed') {
+                $('#failed').show();
+        }
+        else {
+            $('#completed').show();
+        }
         $("#updatefield").append(response.status + "<br/>");
         var textfield = document.getElementById('textfield');
         textfield.scrollTop = textfield.scrollHeight;
@@ -153,6 +159,9 @@ function l1nodes_srlg(form,btn,btn_text) {
         console.log(response);
         if (response.status == 'failed') {
                 $('#failed').show();
+        }
+        else {
+            $('#completed').show();
         }
         var newrequest = {};
         newrequest['action'] = "get-l1nodes";
@@ -189,7 +198,10 @@ function l1links_srlg(form,btn,btn_text) {
         console.log("Callback to assign-srrg request!");
         console.log(response);
         if (response.status == 'failed') {
-                $('#failed').show();
+            $('#failed').show();
+        }
+        else {
+            $('#completed').show();
         }
         var newrequest = {};
         newrequest['action'] = "get-l1links";
@@ -205,86 +217,6 @@ function l1links_srlg(form,btn,btn_text) {
         btn.removeAttr("disabled");
     });
 }
-
-
-//function l1links_assign_srlg(form,btn,btn_text) {
-//    var formdata = form.form2Dict();
-////    var btn = $("#l1links-btn");
-//    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
-//    btn.html(btn_spinner_html);
-//    btn.attr("disabled","disabled");
-//    var request={};
-//    request['pool-name'] = formdata['pool-name'];
-//    request['action'] = "assign-srrg";
-//    request['type'] = formdata['type'];
-//    var fdns = [];
-//    //TODO Learn how jQuery filtering works like in next line of code
-//    $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
-////        var id=$(this).attr('id');
-//        console.log(this.id);
-//        fdns.push(this.id);
-//    });
-//    request['fdns'] = fdns;
-//    console.log(request);
-//    jQuery().postJSON("/ajax", request, function(response) {
-//        console.log("Callback to assign-srrg request!");
-//        console.log(response);
-//        if (response.status == 'failed') {
-//                $('#failed').show();
-//        }
-//        var newrequest = {};
-//        newrequest['action'] = "get-l1links";
-//        jQuery().postJSON("/ajax", newrequest, function(response) {
-//            console.log("Callback to assign-srrg request!");
-////            console.log(response);
-//            $("#links_table thead").remove();
-//            $("#links_table tbody").remove();
-//            client.buildL1linksTable(response);
-//        });
-//        btn.empty();
-//        btn.text(btn_text);
-//        btn.removeAttr("disabled");
-//    });
-//}
-//
-//function l1links_unassign_srlg(form) {
-//    var formdata = form.form2Dict();
-//    var btn = $("#l1links-unassign-btn");
-//    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>Unassign';
-//    btn.html(btn_spinner_html);
-//    btn.attr("disabled","disabled");
-//    var request={};
-//    request['type'] = formdata['type'];
-//    request['action'] = "unassign-srrg";
-//    var fdns = [];
-////    //TODO Learn how jQuery filtering works like in next line of code
-//    $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
-////        var id=$(this).attr('id');
-//        console.log(this.id);
-//        fdns.push(this.id);
-//    });
-//    request['fdns'] = fdns;
-//    console.log(request);
-//    jQuery().postJSON("/ajax", request, function(response) {
-//        console.log("Callback to unassign-srrg request!");
-//        console.log(response);
-//        if (response.status == 'failed') {
-//                $('#failed').show();
-//        }
-//        var newrequest = {};
-//        newrequest['action'] = "get-l1links";
-//        jQuery().postJSON("/ajax", newrequest, function(response) {
-////            console.log("Callback to assign-srrg request!");
-////            console.log(response);
-//            $("#links_table th").remove();
-//            $("#links_table tr").remove();
-//            client.buildL1linksTable(response);
-//        });
-//        btn.empty();
-//        btn.text("Unassign");
-//        btn.removeAttr("disabled");
-//    });
-//}
 
 //jQuery extended functions defined...
 jQuery.fn.extend({

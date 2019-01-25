@@ -71,44 +71,34 @@ class AjaxHandler(tornado.web.RequestHandler):
             self.write(json.dumps(response))
 
         if action == 'collect':
-            try:
-                srlg_only = request['srlg-only'][0]
-                self.send_message_open_ws("Collecting data from EPNM...")
-                if srlg_only == 'on':
-                    collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
-                elif srlg_only == 'off':
-                    clean_files()
-                    collect.runcollector(baseURL, epnmuser, epnmpassword)
-                self.send_message_open_ws("Processing SRLGs...")
-                process_srrgs.parse_ssrgs()
-                self.send_message_open_ws("Processing nodes, links, topolinks...")
-                process_srrgs.processl1nodes(region=global_region, type="Node")
-                process_srrgs.processl1links(region=global_region, type="Degree")
-                process_srrgs.processtopolinks(region=global_region)
-                self.send_message_open_ws("Completed collecting data from EPNM...")
-                response = {'action': 'collect', 'status': 'completed'}
-                logging.info(response)
-                self.write(json.dumps(response))
-            except Exception as err:
-                try:
-                    # exc_info = sys.exc_info()
-                    # do you usefull stuff here
-                    # (potentially raising an exception)
-                    logging.info("Exception caught!!!")
-                    logging.info(err)
-                    response = {'action': 'collect', 'status': 'failed'}
-                    self.write(json.dumps(response))
-                    # try:
-                    #     raise TypeError("Again !?!")
-                    # except:
-                    #     pass
-                    # end of useful stuff
-                finally:
-                    # Display the *original* exception
-                    traceback.print_tb(err.__traceback__)
-                    # traceback.print_exception(*exc_info)
-                    # del exc_info
-
+            methods.collection(self, request, global_region, baseURL, epnmuser, epnmpassword)
+            # try:
+            #     srlg_only = request['srlg-only'][0]
+            #     self.send_message_open_ws("Collecting data from EPNM...")
+            #     if srlg_only == 'on':
+            #         collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
+            #     elif srlg_only == 'off':
+            #         clean_files()
+            #         collect.runcollector(baseURL, epnmuser, epnmpassword)
+            #     self.send_message_open_ws("Processing SRLGs...")
+            #     process_srrgs.parse_ssrgs()
+            #     self.send_message_open_ws("Processing nodes, links, topolinks...")
+            #     process_srrgs.processl1nodes(region=global_region, type="Node")
+            #     process_srrgs.processl1links(region=global_region, type="Degree")
+            #     process_srrgs.processtopolinks(region=global_region)
+            #     self.send_message_open_ws("Completed collecting data from EPNM...")
+            #     response = {'action': 'collect', 'status': 'completed'}
+            #     logging.info(response)
+            #     self.write(json.dumps(response))
+            # except Exception as err:
+            #     try:
+            #         logging.info("Exception caught!!!")
+            #         logging.info(err)
+            #         response = {'action': 'collect', 'status': 'failed'}
+            #         self.write(json.dumps(response))
+            #     finally:
+            #         # Display the *original* exception
+            #         traceback.print_tb(err.__traceback__)
         elif action == 'assign-srrg':
             try:
                 pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name'][0]
@@ -221,11 +211,7 @@ class L1LinksHandler(tornado.web.RequestHandler):
         # base_full_url = self.request.protocol + "://" + self.request.host
         l1links = methods.getl1links()
         conduit_pools = methods.get_srrg_pools(0)
-        # if len(conduit_pools) == 0:
-        #     conduit_pools = ['No Conduit SRLG Pools Defined']
         degree_pools = methods.get_srrg_pools(2)
-        # if len(degree_pools) == 0:
-        #     degree_pools = ['No Degree SRLG Pools Defined']
         self.render("templates/l1_links_template.html", port=args.port, degree_pools=degree_pools,
                     conduit_pools=conduit_pools, l1links_data=l1links)
 
@@ -248,7 +234,6 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 
     def send_message(self, message):
         self.write_message(message)
-        pass
 
     def on_message(self, message):
         """Evaluates the function pointed to by json-rpc."""
@@ -256,8 +241,6 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         logging.info("Websocket received message: " + json.dumps(json_rpc))
 
         try:
-            # The only available method is `count`, but I'm generalizing
-            # to allow other methods without too much extra code
             result = getattr(methods,
                              json_rpc["method"])(**json_rpc["params"])
             error = None

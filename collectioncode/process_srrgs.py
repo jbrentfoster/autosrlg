@@ -238,7 +238,7 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
 
 
 def assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list):
-    usrlabel = "Conduit SRRG " + str(random.randint(1, 10001))
+    usrlabel = "L1 Link SRRG " + str(random.randint(1, 10001))
     description = "Automated by Python."
     respool = pool
     xml_fdn_list = ""
