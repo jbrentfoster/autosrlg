@@ -324,19 +324,7 @@ var client = {
 //            queue[uuid] = "getl1nodes";
 //        });
 //    },
-//
-//    srlgtable: function (srlg) {
-//        console.log("srlgtable function called...");
-//        var uuid = this.uuid();
-//        var socket = this.socket;
-//        var queue = this.queue;
-//        this.waitForSocketConnection(this.socket, function() {
-//            console.log("Sending message to getsrlg...")
-//            console.log("UUID is: " + uuid)
-//            socket.send(JSON.stringify({method: "getsrlg", id: uuid, params: {srlg: srlg}}));
-//            queue[uuid] = "getsrlg";
-//        });
-//    },
+
     set_region_select: function (region) {
         $("#region-select").val(region);
     },

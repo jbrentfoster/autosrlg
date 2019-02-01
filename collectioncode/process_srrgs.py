@@ -106,6 +106,7 @@ def unassignl1node_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
 
+
 def unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, node_fdn, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
@@ -237,8 +238,8 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
             createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn)
 
 
-def assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool, link_fdn_list):
-    usrlabel = "L1 Link SRRG " + str(random.randint(1, 10001))
+def assign_srrg(baseURL, epnmuser, epnmpassword, pool, srrg_type, uuid, link_fdn_list):
+    usrlabel = "SSRG type " + srrg_type + " UUID " + uuid
     description = "Automated by Python."
     respool = pool
     xml_fdn_list = ""
@@ -280,6 +281,7 @@ def unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, link_fdn, srrg
                     fdn = srrg
                     rsfdn = v1['fdn']
                     unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
 
 def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
@@ -365,11 +367,11 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
                             elif ctp == "PSLINE-81-2":
                                 fdn_b_list.append({ctp: val1['fdn']})
         if len(fdn_a_list) > 0:
-            print ("Topo links for PSLINE-81-1")
+            print("Topo links for PSLINE-81-1")
             xml_fdn_list = ""
             for fdn in fdn_a_list:
                 xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE 81 1'] + "</p:resource-fdn>" + "\n"
-            print (xml_fdn_list)
+            print(xml_fdn_list)
             usrlabel = "Add Drop Node " + v1['Name'] + "  PSLINE 81 1 " + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
@@ -378,11 +380,11 @@ def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
             # raw_input("Press ENTER to continue...")
 
         if len(fdn_b_list) > 0:
-            print ("Topo links for PSLINE-81-2")
+            print("Topo links for PSLINE-81-2")
             xml_fdn_list = ""
             for fdn in fdn_b_list:
                 xml_fdn_list += "<p:resource-fdn>" + fdn['PSLINE 81 2'] + "</p:resource-fdn>" + "\n"
-            print (xml_fdn_list)
+            print(xml_fdn_list)
             usrlabel = "Add Drop Node " + v1['Name'] + "  PSLINE 81 2 " + str(random.randint(1, 10001))
             description = "Automated by Python."
             respool = pool
@@ -453,7 +455,7 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         f.close()
     logging.info("Attempting to delete SRRG: " + fdn)
     newxmlbody = xmlbody.format(fdn=fdn, rsfdn=rsfdn)
-    logging.info (newxmlbody)
+    logging.info(newxmlbody)
     uri = "/operations/v1/cisco-resource-activation:unassign-shared-risk-resource-group"
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
 
@@ -464,7 +466,7 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         logging.info("XML parsing error.  The received message from websocket is not XML.")
         return
     except Exception as err:
-        logging.warning (xmlresponse)
+        logging.warning(xmlresponse)
         logging.warning("Operation failed.")
         return
 

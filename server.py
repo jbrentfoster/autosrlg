@@ -61,6 +61,7 @@ class AjaxHandler(tornado.web.RequestHandler):
         request = tornado.escape.recursive_unicode(self.request.arguments)
         logging.info("Received AJAX request..")
         logging.info(json.dumps(request))
+
         try:
             action = request['action'][0]
         except Exception as err:
@@ -105,11 +106,13 @@ class AjaxHandler(tornado.web.RequestHandler):
                 link_fdn_list = request['fdns[]']
                 srrg_type = request['type'][0]
                 if srrg_type == "conduit":
-                    process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, link_fdn_list)
+                    request_uuid = str(uuid.uuid4()).replace("-", "")
+                    process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid, link_fdn_list)
                 elif srrg_type == "degree" or srrg_type == "l1node":
                     for fdn in link_fdn_list:
+                        request_uuid = str(uuid.uuid4()).replace("-", "")
                         single_fdn_list = [fdn]
-                        process_srrgs.assignl1link_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, single_fdn_list)
+                        process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid, single_fdn_list)
                 time.sleep(2)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
