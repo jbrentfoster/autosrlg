@@ -4,12 +4,12 @@
 <h3>Add/Drop Topological Links</h3>
 <p>Includes Add/Drop topological links for a specific L1 node (NCS2k)</p>
 <div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
-    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
-  <strong>Failed!</strong> The request to the server failed.  Try again.
+    <a href="#" class="close" data-hide="alert" aria-label="close">&times;</a>
+    <strong>Failed!</strong> The request to the server failed. Try again.
 </div>
 <div class="alert alert-success alert-dismissible collapse" role="alert" id="completed">
-    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
-  <strong>Sucess</strong> The request to the server completed successfully.
+    <a href="#" class="close" data-hide="alert" aria-label="close">&times;</a>
+    <strong>Sucess</strong> The request to the server completed successfully.
 </div>
 <form id="topolinks-add-drop-form">
     <div><input type="hidden" name="type" value="add-drop"></div>
@@ -31,7 +31,28 @@
         </div>
     </div>
 </form>
-
+<form id="topolinks-psline-form">
+    <div><input type="hidden" name="l1node" value="{{l1node}}"></div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <select class="form-control" name="psline" id="psline-select">
+                <option>PSLINE-81-1</option>
+                <option>PSLINE-81-2</option>
+                <option>PSLINE-81-6</option>
+                <option>PSLINE-81-7</option>
+                <option>PSLINE-2-1</option>
+                <option>PSLINE-2-2</option>
+                <option>PSLINE-2-6</option>
+                <option>PSLINE-2-7</option>
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <button type="submit" class="btn btn-success" style="width: 75%" id="psline-btn">
+                PSLINE
+            </button>
+        </div>
+    </div>
+</form>
 <form id="topolinks-unassign-add-drop-form">
     <div><input type="hidden" name="action" value="unassign-srrg"></div>
     <div><input type="hidden" name="type" value="add-drop"></div>
@@ -51,6 +72,8 @@
 
 <script type="text/javascript">
     client.buildtopolinkstable_add_drop('{{ topo_links_data }}');
+    client.set_psline_select(getUrlVars()['psline']);
+
 </script>
 
 {% end %}

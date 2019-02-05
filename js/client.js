@@ -468,6 +468,10 @@ var client = {
         $("#region-select").val(region);
     },
 
+    set_psline_select: function (psline) {
+        $("#psline-select").val(psline);
+    },
+
     buildtopolinkstable_add_drop: function (topo_link_data) {
         var table = $('#topo_links_table'), row = null, data = null;
         var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Add/Drop SRLGs</th><th>Incorrect SRLGs</th></thead>');
@@ -627,7 +631,8 @@ var client = {
 
     buildL1nodesTable: function (l1nodes_data) {
         var table = $('#nodes_table'), row = null, data = null;
-        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/Incorrect SRLGs</th><th>Topolinks</br>PSLINE-81-1</th><th>Topolinks</br>PSLINE-81-2</th></thead>');
+//        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/</br>Incorrect SRLGs</th><th>Topolinks</br>PSLINE-81-1</th><th>Topolinks</br>PSLINE-81-2</th><th>Topolinks</br>PSLINE-81-6</th><th>Topolinks</br>PSLINE-81-7</th><th>Topolinks</br>PSLINE-2-1</th><th>Topolinks</br>PSLINE-2-2</th><th>Topolinks</br>PSLINE-2-6</th><th>Topolinks</br>PSLINE-2-7</th></thead>');
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/</br>Incorrect SRLGs</th><th>Topolinks</br>PSLINE</th></thead>');
         thead.appendTo(table);
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
@@ -669,13 +674,37 @@ var client = {
                 $('<td></td>').appendTo(row);
             }
 
-            var topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-1" name = "PSLINE-81-1">PSLINE-81-1</a></br>';
+            var topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-1" name = "PSLINE">PSLINE</a></br>';
             var topolinks_td = "<td>"+ topolinks_url + "</td>";
             $(topolinks_td).appendTo(row);
 
-            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-2" name = "PSLINE-81-2">PSLINE-81-2</a></br>';
-            topolinks_td = "<td>"+ topolinks_url + "</td>";
-            $(topolinks_td).appendTo(row);
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-2" name = "PSLINE-81-2">PSLINE-81-2</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
+//
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-6" name = "PSLINE-81-6">PSLINE-81-6</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
+//
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-7" name = "PSLINE-81-7">PSLINE-81-7</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
+//
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-2-1" name = "PSLINE-2-1">PSLINE-2-1</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
+//
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-2-2" name = "PSLINE-2-2">PSLINE-2-2</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
+//
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-2-6" name = "PSLINE-2-6">PSLINE-2-6</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
+//
+//            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-2-7" name = "PSLINE-2-7">PSLINE-2-7</a></br>';
+//            topolinks_td = "<td>"+ topolinks_url + "</td>";
+//            $(topolinks_td).appendTo(row);
 
             row.appendTo(tbody);
         });

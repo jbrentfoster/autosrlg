@@ -235,10 +235,11 @@ class MPLSNodesHandler(tornado.web.RequestHandler):
 class AddDropTopoLinksHandler(tornado.web.RequestHandler):
 
     def get(self):
+        l1node = self.get_argument('l1node')
         topo_links = methods.gettopolinks_psline(self.get_argument('l1node'), self.get_argument('psline'))
         add_drop_pools = methods.get_srrg_pools(3)
         self.render("templates/topo_links_template_add_drop.html", port=args.port, topo_links_data=topo_links,
-                    add_drop_pools=add_drop_pools)
+                    add_drop_pools=add_drop_pools, l1node=l1node)
 
 class LineCardTopoLinksHandler(tornado.web.RequestHandler):
 
