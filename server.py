@@ -243,7 +243,9 @@ class AddDropTopoLinksHandler(tornado.web.RequestHandler):
 class LineCardTopoLinksHandler(tornado.web.RequestHandler):
 
     def get(self):
-        topo_links = methods.gettopolinks_mpls_node(self.get_argument('mplsnode'))
+        thequery = self.request.query
+        mplsnode = thequery.split('=')[1]
+        topo_links = methods.gettopolinks_mpls_node(mplsnode)
         card_pools = methods.get_srrg_pools(6)
         self.render("templates/topo_links_template_line_card.html", port=args.port, topo_links_data=topo_links,
                     card_pools=card_pools)
