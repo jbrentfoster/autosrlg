@@ -16,6 +16,12 @@ def getl1nodes():
         f.close()
     return json.dumps(l1nodes)
 
+def getmplsnodes():
+    with open("jsonfiles/4k-nodes_db.json", 'r', ) as f:
+        mplsnodes = json.load(f)
+        f.close()
+    return json.dumps(mplsnodes)
+
 
 def get_srrg_pools(pool_type):
     srrg_pools = []
@@ -48,16 +54,43 @@ def getl1links():
     return json.dumps(l1links)
 
 
-def gettopolinks():
+def gettopolinks_psline(node_name, psline):
     with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
         topo_links = json.load(f)
         f.close()
-    return json.dumps(topo_links)
+    node_topo_links = {}
+    for key1, val1 in topo_links.items():
+        for node in val1['Nodes']:
+            if node['node'] == node_name:
+                # logging.info('Checking topo link ' + val1['fdn'])
+                ctp_split = node['ctp'].split('&')[0].split('-')
+                node_psline = ctp_split[0] + '-' + ctp_split[1] + '-' + ctp_split[2]
+                if node_psline == psline:
+                    node_topo_links[key1] = val1
+    if node_name == "":
+        return json.dumps(topo_links)
+    else:
+        return json.dumps(node_topo_links)
+
+
+def gettopolinks_mpls_node(node_name):
+    with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
+        topo_links = json.load(f)
+        f.close()
+    node_topo_links = {}
+    for key1, val1 in topo_links.items():
+        for node in val1['Nodes']:
+            if node['node'] == node_name:
+                node_topo_links[key1] = val1
+    if node_name == "":
+        return json.dumps(topo_links)
+    else:
+        return json.dumps(node_topo_links)
 
 
 def collection(ajax_handler, request, global_region, baseURL, epnmuser, epnmpassword):
     try:
-        srlg_only = request['srlg-only'][0]
+        srlg_only = request['srlg-only']
         ajax_handler.send_message_open_ws("Collecting data from EPNM...")
         if srlg_only == 'on':
             collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)

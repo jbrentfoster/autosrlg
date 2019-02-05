@@ -58,12 +58,15 @@ class AjaxHandler(tornado.web.RequestHandler):
         global baseURL
         global epnmuser
         global epnmpassword
-        request = tornado.escape.recursive_unicode(self.request.arguments)
+
+        request_body = self.request.body.decode("utf-8")
+        # request = tornado.escape.recursive_unicode(self.request.arguments)
         logging.info("Received AJAX request..")
-        logging.info(json.dumps(request))
+        logging.info(request_body)
+        request = json.loads(request_body)
 
         try:
-            action = request['action'][0]
+            action = request['action']
         except Exception as err:
             logging.warning("Invalid AJAX request")
             logging.warning(err)
@@ -73,47 +76,33 @@ class AjaxHandler(tornado.web.RequestHandler):
 
         if action == 'collect':
             methods.collection(self, request, global_region, baseURL, epnmuser, epnmpassword)
-            # try:
-            #     srlg_only = request['srlg-only'][0]
-            #     self.send_message_open_ws("Collecting data from EPNM...")
-            #     if srlg_only == 'on':
-            #         collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
-            #     elif srlg_only == 'off':
-            #         clean_files()
-            #         collect.runcollector(baseURL, epnmuser, epnmpassword)
-            #     self.send_message_open_ws("Processing SRLGs...")
-            #     process_srrgs.parse_ssrgs()
-            #     self.send_message_open_ws("Processing nodes, links, topolinks...")
-            #     process_srrgs.processl1nodes(region=global_region, type="Node")
-            #     process_srrgs.processl1links(region=global_region, type="Degree")
-            #     process_srrgs.processtopolinks(region=global_region)
-            #     self.send_message_open_ws("Completed collecting data from EPNM...")
-            #     response = {'action': 'collect', 'status': 'completed'}
-            #     logging.info(response)
-            #     self.write(json.dumps(response))
-            # except Exception as err:
-            #     try:
-            #         logging.info("Exception caught!!!")
-            #         logging.info(err)
-            #         response = {'action': 'collect', 'status': 'failed'}
-            #         self.write(json.dumps(response))
-            #     finally:
-            #         # Display the *original* exception
-            #         traceback.print_tb(err.__traceback__)
         elif action == 'assign-srrg':
             try:
-                pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name'][0]
-                link_fdn_list = request['fdns[]']
-                srrg_type = request['type'][0]
-                if srrg_type == "conduit":
+                pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name']
+                fdn_list = request['fdns']
+                srrg_type = request['type']
+                if srrg_type == "conduit" or srrg_type == 'add-drop':
                     request_uuid = str(uuid.uuid4()).replace("-", "")
-                    process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid, link_fdn_list)
+                    process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                              fdn_list)
                 elif srrg_type == "degree" or srrg_type == "l1node":
-                    for fdn in link_fdn_list:
+                    for fdn in fdn_list:
                         request_uuid = str(uuid.uuid4()).replace("-", "")
                         single_fdn_list = [fdn]
-                        process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid, single_fdn_list)
-                time.sleep(2)
+                        process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                                  single_fdn_list)
+                elif srrg_type == "line-card":
+                    for i in range(0,16):
+                        slot_num = "Slot " + str(i)
+                        slot_fdns = []
+                        for tmp_fdn in fdn_list:
+                            if slot_num == tmp_fdn['slot']:
+                                slot_fdns.append(tmp_fdn['fdn'])
+                        if len(slot_fdns) > 0:
+                            request_uuid = str(uuid.uuid4()).replace("-", "")
+                            process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                                      slot_fdns)
+                time.sleep(10)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
                 logging.info("Region is " + str(global_region))
@@ -131,19 +120,29 @@ class AjaxHandler(tornado.web.RequestHandler):
                 self.write(json.dumps(response))
         elif action == 'unassign-srrg':
             try:
-                type = request['type'][0]
+                type = request['type']
                 if type == 'conduit':
                     srrg_type = 'srrgs-conduit'
                 elif type == 'link' or type == 'l1node':
                     srrg_type = 'srrgs'
-                fdn_list = request['fdns[]']
+                elif type == 'add-drop':
+                    srrg_type = 'srrgs-ad'
+                elif type == 'line-card':
+                    srrg_type = 'srrgs-lc'
+                fdn_list = request['fdns']
                 if type == 'conduit' or type == 'link':
                     for fdn in fdn_list:
                         process_srrgs.unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
                 elif type == 'l1node':
                     for fdn in fdn_list:
                         process_srrgs.unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
-                time.sleep(2)
+                elif type == 'add-drop':
+                    for fdn in fdn_list:
+                        process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+                elif type == "line-card":
+                    for tmp_fdn in fdn_list:
+                            process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, tmp_fdn['fdn'], srrg_type)
+                time.sleep(10)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
                 logging.info("Region is " + str(global_region))
@@ -160,19 +159,26 @@ class AjaxHandler(tornado.web.RequestHandler):
                 self.write(json.dumps(response))
         elif action == 'get-l1nodes':
             l1nodes = methods.getl1nodes()
-            # logging.info(l1nodes)
             self.write(json.dumps(l1nodes))
         elif action == 'get-l1links':
             l1links = methods.getl1links()
-            # logging.info(l1links)
             self.write(json.dumps(l1links))
+        elif action == 'get-topolinks':
+            node_name = request['l1node']
+            psline = request['psline']
+            topolinks = methods.gettopolinks_psline(node_name, psline)
+            self.write(json.dumps(topolinks))
+        elif action == 'get-topolinks-line-card':
+            node_name = request['mplsnode']
+            topolinks = methods.gettopolinks_mpls_node(node_name)
+            self.write(json.dumps(topolinks))
         elif action == 'update-epnm':
             time.sleep(2)
-            epnmipaddr = request['epnm-ip'][0]
+            epnmipaddr = request['epnm-ip']
             baseURL = "https://" + epnmipaddr + "/restconf"
-            epnmuser = request['epnm-user'][0]
-            epnmpassword = request['epnm-pass'][0]
-            region = request['region'][0]
+            epnmuser = request['epnm-user']
+            epnmpassword = request['epnm-pass']
+            region = request['region']
             region_int = int(region)
             global_region = region_int
             response = {'action': 'update-epnm', 'status': 'success'}
@@ -196,17 +202,17 @@ class SRLGHandler(tornado.web.RequestHandler):
         self.render("templates/srlg_template.html", port=args.port, srlg_num=srlg_num, srlg_data=srlg)
 
 
-class L1NodesHandler(tornado.web.RequestHandler):
+class ROADMNodesHandler(tornado.web.RequestHandler):
 
     def get(self):
         l1nodes = methods.getl1nodes()
         pools = methods.get_srrg_pools(1)
         # if len(pools) == 0:
         #     pools = ['No Node SRLG Pools Defined']
-        self.render("templates/l1_nodes_template.html", port=args.port, l1nodes_data=l1nodes, pools=pools)
+        self.render("templates/roadm_nodes_template.html", port=args.port, l1nodes_data=l1nodes, pools=pools)
 
 
-class L1LinksHandler(tornado.web.RequestHandler):
+class ROADMLinksHandler(tornado.web.RequestHandler):
 
     def get(self):
         # full_url = self.request.full_url()
@@ -215,18 +221,39 @@ class L1LinksHandler(tornado.web.RequestHandler):
         l1links = methods.getl1links()
         conduit_pools = methods.get_srrg_pools(0)
         degree_pools = methods.get_srrg_pools(2)
-        self.render("templates/l1_links_template.html", port=args.port, degree_pools=degree_pools,
+        self.render("templates/roadm_links_template.html", port=args.port, degree_pools=degree_pools,
                     conduit_pools=conduit_pools, l1links_data=l1links)
 
 
-class TopoLinksHandler(tornado.web.RequestHandler):
+class MPLSNodesHandler(tornado.web.RequestHandler):
 
     def get(self):
-        topo_links = methods.gettopolinks()
+        mpls_nodes = methods.getmplsnodes()
+        self.render("templates/mpls_nodes_template.html", port=args.port, mpls_nodes_data=mpls_nodes)
+
+
+class AddDropTopoLinksHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        topo_links = methods.gettopolinks_psline(self.get_argument('l1node'), self.get_argument('psline'))
         add_drop_pools = methods.get_srrg_pools(3)
+        self.render("templates/topo_links_template_add_drop.html", port=args.port, topo_links_data=topo_links,
+                    add_drop_pools=add_drop_pools)
+
+class LineCardTopoLinksHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        topo_links = methods.gettopolinks_mpls_node(self.get_argument('mplsnode'))
         card_pools = methods.get_srrg_pools(6)
-        self.render("templates/topo_links_template.html", port=args.port, topo_links_data=topo_links,
-                    add_drop_pools=add_drop_pools, card_pools=card_pools)
+        self.render("templates/topo_links_template_line_card.html", port=args.port, topo_links_data=topo_links,
+                    card_pools=card_pools)
+
+class DummyHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        print(self.get_argument('foo', default="anna"))
+        print(self.get_argument('bar', default="leigh"))
+        pass
 
 
 class WebSocket(tornado.websocket.WebSocketHandler):
@@ -304,10 +331,19 @@ def main():
                 url(r'/srlg/static/(.*)',
                     tornado.web.StaticFileHandler,
                     dict(path=settings['static_path'])),
-                url(r'/l1links', L1LinksHandler, name="l1_links"),
-                url(r'/l1nodes', L1NodesHandler, name="l1_nodes"),
-                url(r'/topolinks', TopoLinksHandler, name="topo_links"),
+                url(r'/roadmlinks', ROADMLinksHandler, name="roadm_links"),
+                url(r'/roadmnodes', ROADMNodesHandler, name="roadm_nodes"),
+                url(r'/mplsnodes', MPLSNodesHandler, name="mpls_nodes"),
+                url(r'/topolinks-ad/?', AddDropTopoLinksHandler, name="ad-topo_links"),
+                url(r'/topolinks-ad/static/(.*)',
+                    tornado.web.StaticFileHandler,
+                    dict(path=settings['static_path'])),
+                url(r'/topolinks-lc/?', LineCardTopoLinksHandler, name="lc-topo_links"),
+                url(r'/topolinks-lc/static/(.*)',
+                    tornado.web.StaticFileHandler,
+                    dict(path=settings['static_path'])),
                 url(r'/ajax', AjaxHandler, name="ajax"),
+                url(r'/dummy/?', DummyHandler),
                 # url(r'/ajax/updates', AjaxUpdatesHandler, name="ajax_updates")
                 ]
 

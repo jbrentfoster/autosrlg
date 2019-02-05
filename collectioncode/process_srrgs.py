@@ -239,7 +239,7 @@ def generatel1link_srrgs(baseURL, epnmuser, epnmpassword, pool):
 
 
 def assign_srrg(baseURL, epnmuser, epnmpassword, pool, srrg_type, uuid, link_fdn_list):
-    usrlabel = "SSRG type " + srrg_type + " UUID " + uuid
+    usrlabel = "SSRG type " + srrg_type.replace('-',' ') + " UUID " + uuid
     description = "Automated by Python."
     respool = pool
     xml_fdn_list = ""
@@ -299,6 +299,24 @@ def unassigntopolink_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
                 fdn = srrg
                 rsfdn = v1['fdn']
                 unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
+
+def unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, link_fdn, srrg_type):
+    # srrg_type should be either 'srrgs' or srrgs-incorrect
+    with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
+        topolinks = json.load(f)
+        f.close()
+    logging.info("Unassigning SRRGs for topolink: " + link_fdn)
+    for k1, v1 in topolinks.items():
+        if v1['fdn'] == link_fdn:
+            if len(v1[srrg_type]) == 0:
+                logging.info("Link has no SRRGs")
+            else:
+                for srrg in v1[srrg_type]:
+                    fdn = srrg
+                    rsfdn = v1['fdn']
+                    unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn)
+
 
 
 def processtopolinks(region):

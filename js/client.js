@@ -28,6 +28,13 @@
         buttonpressed = $(this);
     });
 
+    $("#topolinks-btn").on("click", function() {
+        buttonpressed = $(this);
+    });
+
+    $("#topolinks-unassign-btn").on("click", function() {
+        buttonpressed = $(this);
+    });
     $("#update-btn").on("click", function() {
         buttonpressed = $(this);
     });
@@ -76,6 +83,34 @@
         return false;
     });
 
+    $("#topolinks-add-drop-form").on("submit", function() {
+        console.log("Topolinks add-drop assign button called from form submit!");
+        btn_text = buttonpressed.text();
+        topolinks_add_drop_srlg($(this),buttonpressed,btn_text);
+        return false;
+    });
+
+    $("#topolinks-unassign-add-drop-form").on("submit", function() {
+        console.log("Topolinks add drop unassign button called from form submit!");
+        btn_text = buttonpressed.text();
+        topolinks_add_drop_srlg($(this),buttonpressed,btn_text);
+        return false;
+    });
+
+    $("#topolinks-line-card-form").on("submit", function() {
+        console.log("Topolinks line card assign button called from form submit!");
+        btn_text = buttonpressed.text();
+        topolinks_line_card_srlg($(this),buttonpressed,btn_text);
+        return false;
+    });
+
+    $("#topolinks-unassign-line-card-form").on("submit", function() {
+        console.log("Topolinks line card unassign button called from form submit!");
+        btn_text = buttonpressed.text();
+        topolinks_line_card_srlg($(this),buttonpressed,btn_text);
+        return false;
+    });
+
     $("#epnm-form").on("submit", function() {
         console.log("EPNM update form submitted!");
         btn_text = buttonpressed.text();
@@ -94,6 +129,14 @@
 //    client.connect(8002);
     console.log("Document ready!");
  });
+
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value.replace("#", "");
+    });
+    return vars;
+}
 
 function epnm_update(form,btn,btn_text) {
     var request = form.form2Dict();
@@ -149,11 +192,13 @@ function l1nodes_srlg(form,btn,btn_text) {
     //TODO Learn how jQuery filtering works like in next line of code
     $('#nodes_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
 //        var id=$(this).attr('id');
-        console.log(this.id);
-        fdns.push(this.id);
+        if(this.id != "") {
+            console.log(this.id);
+            fdns.push(this.id);
+        }
     });
     request['fdns'] = fdns;
-    console.log(request);
+    console.log(JSON.stringify(request));
     jQuery().postJSON("/ajax", request, function(response) {
         console.log("Callback to assign-srrg request!");
         console.log(response);
@@ -189,8 +234,10 @@ function l1links_srlg(form,btn,btn_text) {
     request['type'] = formdata['type'];
     var fdns = [];
     $('#links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
-        console.log(this.id);
-        fdns.push(this.id);
+        if(this.id != "") {
+            console.log(this.id);
+            fdns.push(this.id);
+        }
     });
     request['fdns'] = fdns;
     console.log(request);
@@ -218,6 +265,97 @@ function l1links_srlg(form,btn,btn_text) {
     });
 }
 
+function topolinks_add_drop_srlg(form,btn,btn_text) {
+    var formdata = form.form2Dict();
+    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
+    btn.html(btn_spinner_html);
+    btn.attr("disabled","disabled");
+    var request={};
+    request['pool-name'] = formdata['pool-name'];
+    request['action'] = formdata['action'];
+    request['type'] = formdata['type'];
+    var fdns = [];
+    $('#topo_links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
+        if(this.id != "") {
+            console.log(this.id);
+            fdns.push(this.id);
+        }
+    });
+    request['fdns'] = fdns;
+    console.log(request);
+    jQuery().postJSON("/ajax", request, function(response) {
+        console.log("Callback to topolinks srlg request!");
+        console.log(response);
+        if (response.status == 'failed') {
+            $('#failed').show();
+        }
+        else {
+            $('#completed').show();
+        }
+        var newrequest = {};
+        newrequest['l1node'] = getUrlVars()['l1node'];
+        newrequest['psline'] = getUrlVars()['psline'];
+        newrequest['action'] = "get-topolinks";
+
+        jQuery().postJSON("/ajax", newrequest, function(response) {
+//            console.log("Callback to assign-srrg request!");
+//            console.log(response);
+            $("#topo_links_table thead").remove();
+            $("#topo_links_table tbody").remove();
+            client.buildtopolinkstable_add_drop(response);
+        });
+        btn.empty();
+        btn.text(btn_text);
+        btn.removeAttr("disabled");
+    });
+}
+
+function topolinks_line_card_srlg(form,btn,btn_text) {
+    var formdata = form.form2Dict();
+    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
+    btn.html(btn_spinner_html);
+    btn.attr("disabled","disabled");
+    var request={};
+    request['pool-name'] = formdata['pool-name'];
+    request['action'] = formdata['action'];
+    request['type'] = formdata['type'];
+    var fdns = [];
+    $('#topo_links_table').find('tr').filter(':has(:checkbox:checked)').each(function(){
+        if(this.id != "") {
+            var fdn = {};
+            var inputs = this.getElementsByTagName("input");
+            fdn['fdn'] = this.id;
+            fdn['slot'] = this.getElementsByTagName("input")[1].value;
+            fdns.push(fdn);
+        }
+    });
+    request['fdns'] = fdns;
+    jQuery().postJSON("/ajax", request, function(response) {
+        console.log("Callback to topolinks srlg request!");
+        console.log(response);
+        if (response.status == 'failed') {
+            $('#failed').show();
+        }
+        else {
+            $('#completed').show();
+        }
+        var newrequest = {};
+        newrequest['mplsnode'] = getUrlVars()['mplsnode'];
+        newrequest['action'] = "get-topolinks-line-card";
+
+        jQuery().postJSON("/ajax", newrequest, function(response) {
+//            console.log("Callback to assign-srrg request!");
+//            console.log(response);
+            $("#topo_links_table thead").remove();
+            $("#topo_links_table tbody").remove();
+            client.buildtopolinkstable_line_card(response);
+        });
+        btn.empty();
+        btn.text(btn_text);
+        btn.removeAttr("disabled");
+    });
+}
+
 //jQuery extended functions defined...
 jQuery.fn.extend({
     form2Dict: function() {
@@ -231,10 +369,11 @@ jQuery.fn.extend({
     },
     postJSON: function(url, args, callback) {
 //        args._xsrf = getCookie("_xsrf");
-//        json_body = JSON.stringify(args);
-        json_body = $.param(args);
+        json_body = JSON.stringify(args);
+        console.log(json_body);
+//        json_body = $.param(args);
 //        $.ajax({url: url, traditional: true, data: $.param(args), dataType: "json", type: "POST",
-          $.ajax({url: url, data: json_body, type: "POST",
+          $.ajax({url: url, data: json_body, processData: false, type: "POST",
 //                beforeSend: function() {
 //                    $("#loading-indicator").show();
 //                },
@@ -329,9 +468,9 @@ var client = {
         $("#region-select").val(region);
     },
 
-    buildtopolinkstable: function (topo_link_data) {
+    buildtopolinkstable_add_drop: function (topo_link_data) {
         var table = $('#topo_links_table'), row = null, data = null;
-        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Add/Drop SRLGs</th><th>Line Card SRLGs</th><th>Incorrect SRLGs</th></thead>');
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Add/Drop SRLGs</th><th>Incorrect SRLGs</th></thead>');
         thead.appendTo(table);
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
@@ -343,8 +482,8 @@ var client = {
 //        <th onclick="javascript:client.sortTable(4,\'topo_links_table\')">Line Card SRLG</th>').appendTo(table);
         var topo_link_data_json = JSON.parse(topo_link_data);
         $.each(topo_link_data_json, function(k1, v1) {
-            var node_a = "<td>"+v1['Nodes'][0]['node'] + "/" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
-            var node_b = "<td>"+v1['Nodes'][1]['node'] + "/" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
+            var node_a = "<td>"+v1['Nodes'][0]['node'] + "</br>" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
+            var node_b = "<td>"+v1['Nodes'][1]['node'] + "</br>" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
             var fdn = "<td>"+v1['fdn'].split('=')[2]+"</td>";
             var row = $('<tr id="'+v1['fdn']+'"></tr>');
             var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+ fdn +'"></td>';
@@ -362,6 +501,81 @@ var client = {
 //                console.log("No AD SRRG!");
                 $('<td></td>').appendTo(row);
             }
+
+//            try {
+//                var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
+//                var srrg_lc_url = '<td><a href="'+origin+'/srlg/'+srrg_lc+'" name = "'+srrg_lc+'">'+srrg_lc+'</a></td>';
+//                $(srrg_lc_url).appendTo(row);
+//            }
+//            catch {
+////                console.log("No LC SRRG!");
+//                $('<td></td>').appendTo(row);
+//            }
+
+            parsed_url_list = [];
+            $.each(v1['srrgs-incorrect'], function(k2,v2) {
+                var parsed = v2.split('=')[2];
+                parsed_url_list += '<a href="'+origin+'/srlg/'+parsed+'" name = "'+parsed+'">'+parsed+'</a></br>';
+            });
+            if (parsed_url_list.length > 0) {
+                var parsed_url = "<td>"+ parsed_url_list + "</td>";
+                $(parsed_url).appendTo(row);
+            }
+            else {
+                $('<td></td>').appendTo(row);
+            }
+
+            row.appendTo(tbody);
+        });
+
+        $('#select-all-links').click(function (e) {
+            $(this).closest('#topo_links_table').find('td input:checkbox').prop('checked', this.checked);
+        });
+
+        $(".form-check-input").click(function (e) {
+            var btn_assign_topolink = $("#topolinks-btn");
+            var btn_unassign = $("#topolinks-unassign-btn");
+            if ($(".form-check-input").is(":checked")) {
+                btn_assign_topolink.prop('disabled', false);
+                btn_unassign.prop('disabled', false);
+            }
+            else {
+                btn_assign_topolink.prop('disabled', true);
+                btn_unassign.prop('disabled', true);
+            }
+        });
+    },
+
+    buildtopolinkstable_line_card: function (topo_link_data) {
+        var table = $('#topo_links_table'), row = null, data = null;
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th onclick="javascript:client.sortTable(1,\'topo_links_table\')">Slot</th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Line Card SRLGs</th><th>Incorrect SRLGs</th></thead>');
+        thead.appendTo(table);
+        var tbody = $('<tbody></tbody>');
+        tbody.appendTo(table);
+        var origin   = window.location.origin;   // Returns base URL
+        var topo_link_data_json = JSON.parse(topo_link_data);
+        $.each(topo_link_data_json, function(k1, v1) {
+            var node_slot;
+            var node_a_type = v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].substring(0,6);
+            var node_b_type = v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].substring(0,6);
+            if (node_a_type == 'Optics') {
+                var node_slot = "Slot " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
+            }
+            else if (node_b_type == 'Optics') {
+                var node_slot = "Slot " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
+            }
+            var node_a = "<td>"+v1['Nodes'][0]['node'] + "</br>" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
+            var node_b = "<td>"+v1['Nodes'][1]['node'] + "</br>" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
+            var fdn = "<td>"+v1['fdn'].split('=')[2]+"</td>";
+            var row = $('<tr id="'+v1['fdn']+'"></tr>');
+            var slot = '<td><input type="hidden" name="slot" value="' + node_slot + '"><td>'
+            var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+ fdn +'"></td>';
+            $(checkbox_html).appendTo(row);
+            $("<td>"+node_slot+"</td>").appendTo(row);
+            $(node_a).appendTo(row);
+            $(node_b).appendTo(row);
+            $(fdn).appendTo(row);
+
 
             try {
                 var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
@@ -386,27 +600,26 @@ var client = {
                 $('<td></td>').appendTo(row);
             }
 
+            $(slot).appendTo(row);
+
             row.appendTo(tbody);
         });
+
+        client.sortTable(1,'topo_links_table');
 
         $('#select-all-links').click(function (e) {
             $(this).closest('#topo_links_table').find('td input:checkbox').prop('checked', this.checked);
         });
 
         $(".form-check-input").click(function (e) {
-            var btn_assign_degree = $("#topolinks-add-drop-btn");
-            var btn_assign_conduit = $("#topolinks-card-btn");
+            var btn_assign_topolink = $("#topolinks-btn");
             var btn_unassign = $("#topolinks-unassign-btn");
             if ($(".form-check-input").is(":checked")) {
-                btn_assign_degree.prop('disabled', false);
-                btn_assign_conduit.prop('disabled', false);
-                if ($("input[name='type']").is(":checked")) {
-                    btn_unassign.prop('disabled', false);
-                }
+                btn_assign_topolink.prop('disabled', false);
+                btn_unassign.prop('disabled', false);
             }
             else {
-                btn_assign_degree.prop('disabled', true);
-                btn_assign_conduit.prop('disabled', true);
+                btn_assign_topolink.prop('disabled', true);
                 btn_unassign.prop('disabled', true);
             }
         });
@@ -414,7 +627,7 @@ var client = {
 
     buildL1nodesTable: function (l1nodes_data) {
         var table = $('#nodes_table'), row = null, data = null;
-        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/Incorrect SRLGs</th></thead>');
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-nodes"></th><th>Node Name</th><th>FDN</th><th>Node SRLG</th><th>Default/Incorrect SRLGs</th><th>Topolinks</br>PSLINE-81-1</th><th>Topolinks</br>PSLINE-81-2</th></thead>');
         thead.appendTo(table);
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
@@ -455,6 +668,15 @@ var client = {
             else {
                 $('<td></td>').appendTo(row);
             }
+
+            var topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-1" name = "PSLINE-81-1">PSLINE-81-1</a></br>';
+            var topolinks_td = "<td>"+ topolinks_url + "</td>";
+            $(topolinks_td).appendTo(row);
+
+            topolinks_url = '<a href="'+origin+'/topolinks-ad?l1node='+v1['Name']+'&psline=PSLINE-81-2" name = "PSLINE-81-2">PSLINE-81-2</a></br>';
+            topolinks_td = "<td>"+ topolinks_url + "</td>";
+            $(topolinks_td).appendTo(row);
+
             row.appendTo(tbody);
         });
         $('#select-all-nodes').click(function (e) {
@@ -564,6 +786,32 @@ var client = {
         });
     },
 
+    buildMPLSnodesTable: function (mpls_nodes_data) {
+        var table = $('#mpls_nodes_table'), row = null, data = null;
+        var thead = $('<thead><th>Node Name</th><th>FDN</th></thead>');
+        thead.appendTo(table);
+        var tbody = $('<tbody></tbody>');
+        tbody.appendTo(table);
+        var mpls_nodes_data_json = JSON.parse(mpls_nodes_data);
+        $.each(mpls_nodes_data_json, function(k1, v1) {
+            var pathname = window.location.pathname;
+            var url      = window.location.href;     // Returns full URL
+            var origin   = window.location.origin;   // Returns base URL
+
+            var row = $('<tr id="'+v1['fdn']+'"></tr>');
+//            var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+v1['fdn']+'"></td>';
+//            $(checkbox_html).appendTo(row);
+            $('<td>'+v1['Name']+'</td>').appendTo(row);
+            $('<td>'+v1['fdn']+'</td>').appendTo(row);
+
+            var topolinks_url = '<a href="'+origin+'/topolinks-lc?mplsnode='+v1['Name']+'" name = "lc-topolink">Line Card Topolinks</a></br>';
+            var topolinks_td = "<td>"+ topolinks_url + "</td>";
+            $(topolinks_td).appendTo(row);
+
+            row.appendTo(tbody);
+        });
+    },
+
     buildSRLGTable: function (srlg_data) {
         var table = $('#srlgtable'), row = null, data = null;
         var srlg_data_json = JSON.parse(srlg_data);
@@ -605,7 +853,7 @@ var client = {
             rows = table.rows;
             /* Loop through all table rows (except the
             first, which contains table headers): */
-            for (i = 0; i < (rows.length - 1); i++) {
+            for (i = 1; i < (rows.length - 1); i++) {
               // Start by saying there should be no switching:
               shouldSwitch = false;
               /* Get the two elements you want to compare,

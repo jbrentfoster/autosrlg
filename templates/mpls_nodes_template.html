@@ -1,0 +1,16 @@
+{% extends "base_template.html" %}
+{% autoescape None %}
+<!--<link>-->
+{% block content %}
+<h3>MPLS Nodes</h3>
+<p>Current MPLS Nodes SRLGs</p>
+
+<div class="table" id="tablediv">
+    <table id="mpls_nodes_table"></table>
+</div>
+
+<script type="text/javascript">
+    client.buildMPLSnodesTable('{{ mpls_nodes_data }}');
+</script>
+
+{% end %}

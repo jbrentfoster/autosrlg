@@ -1,0 +1,56 @@
+{% extends "base_template.html" %}
+{% autoescape None %}
+{% block content %}
+<h3>Line Card Topological Links</h3>
+<p>Includes line card topological links for a specific MPLS node (NCS4k)</p>
+<div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Failed!</strong> The request to the server failed.  Try again.
+</div>
+<div class="alert alert-success alert-dismissible collapse" role="alert" id="completed">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Sucess</strong> The request to the server completed successfully.
+</div>
+<form id="topolinks-line-card-form">
+    <div><input type="hidden" name="type" value="line-card"></div>
+    <div><input type="hidden" name="action" value="assign-srrg"></div>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <select class="form-control" name="pool-name" id="region-select">
+                {% for pool in card_pools %}
+                {% block pool %}
+                <option>{{ escape(pool) }}</option>
+                {% end %}
+                {% end %}
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <button type="submit" class="btn btn-success" style="width: 75%" id="topolinks-btn" disabled>
+                Assign Line Card
+            </button>
+        </div>
+    </div>
+</form>
+
+<form id="topolinks-unassign-line-card-form">
+    <div><input type="hidden" name="action" value="unassign-srrg"></div>
+    <div><input type="hidden" name="type" value="line-card"></div>
+    <div class="form-row">
+        <div class="form-group col-md-5">
+            <button type="submit" class="btn btn-success" style="width: 33%" id="topolinks-unassign-btn" disabled>
+                Unassign
+            </button>
+        </div>
+    </div>
+</form>
+
+
+<div class="table" id="tablediv">
+    <table id="topo_links_table"></table>
+</div>
+
+<script type="text/javascript">
+    client.buildtopolinkstable_line_card('{{ topo_links_data }}');
+</script>
+
+{% end %}

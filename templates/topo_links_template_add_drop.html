@@ -1,8 +1,8 @@
 {% extends "base_template.html" %}
 {% autoescape None %}
 {% block content %}
-<h3>Topological Links</h3>
-<p>Includes Add/Drop and Line Card SRLGs</p>
+<h3>Add/Drop Topological Links</h3>
+<p>Includes Add/Drop topological links for a specific L1 node (NCS2k)</p>
 <div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
     <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
   <strong>Failed!</strong> The request to the server failed.  Try again.
@@ -13,6 +13,7 @@
 </div>
 <form id="topolinks-add-drop-form">
     <div><input type="hidden" name="type" value="add-drop"></div>
+    <div><input type="hidden" name="action" value="assign-srrg"></div>
     <div class="form-row">
         <div class="form-group col-md-3">
             <select class="form-control" name="pool-name" id="region-select">
@@ -24,54 +25,32 @@
             </select>
         </div>
         <div class="form-group col-md-3">
-            <button type="submit" class="btn btn-success" style="width: 75%" id="topolinks-add-drop-btn" disabled>
+            <button type="submit" class="btn btn-success" style="width: 75%" id="topolinks-btn" disabled>
                 Assign Add/Drop
             </button>
         </div>
     </div>
 </form>
-<form id="topolinks-card-form">
-    <div><input type="hidden" name="type" value="card"></div>
-    <div class="form-row">
-        <div class="form-group col-md-3">
-            <select class="form-control" name="pool-name" id="region-select">
-                {% for pool in card_pools %}
-                {% block pool %}
-                <option>{{ escape(pool) }}</option>
-                {% end %}
-                {% end %}
-            </select>
-        </div>
-        <div class="form-group col-md-3">
-            <button type="submit" class="btn btn-success" style="width: 75%" id="topolinks-card-btn" disabled>
-                Assign Card
-            </button>
-        </div>
-    </div>
-</form>
-<form id="topolinks-unassign-form">
+
+<form id="topolinks-unassign-add-drop-form">
     <div><input type="hidden" name="action" value="unassign-srrg"></div>
+    <div><input type="hidden" name="type" value="add-drop"></div>
     <div class="form-row">
         <div class="form-group col-md-5">
             <button type="submit" class="btn btn-success" style="width: 33%" id="topolinks-unassign-btn" disabled>
                 Unassign
             </button>
-            <div class="btn-group" data-toggle="buttons">
-                <label label-default="" class="btn btn-default">
-                    <input id="option1" name="type" type="radio" value="add-drop"/>Add/Drop</label>
-                <label label-default="" class="btn btn-default">
-                    <input id="option2" name="type" type="radio" value="card"/>Card</label>
-            </div>
         </div>
     </div>
 </form>
+
 
 <div class="table" id="tablediv">
     <table id="topo_links_table"></table>
 </div>
 
 <script type="text/javascript">
-    client.buildtopolinkstable('{{ topo_links_data }}');
+    client.buildtopolinkstable_add_drop('{{ topo_links_data }}');
 </script>
 
 {% end %}
