@@ -42,13 +42,6 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render("templates/index.html", port=args.port, epnm_ip=epnmipaddr, epnm_user=epnmuser,
                     epnm_pass=epnmpassword, region=global_region)
 
-    # async def get(self):
-    #     http = tornado.httpclient.AsyncHTTPClient()
-    #     response = await http.fetch("http://friendfeed-api.com/v2/feed/bret")
-    #     json = tornado.escape.json_decode(response.body)
-    #     self.write("Fetched " + str(len(json["entries"])) + " entries "
-    #                "from the FriendFeed API")
-
 
 class AjaxHandler(tornado.web.RequestHandler):
 
@@ -81,20 +74,21 @@ class AjaxHandler(tornado.web.RequestHandler):
                 pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name']
                 fdn_list = request['fdns']
                 srrg_type = request['type']
+                result = 'unknown'
                 if srrg_type == "conduit" or srrg_type == 'add-drop':
                     request_uuid = str(uuid.uuid4()).replace("-", "")
-                    process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                    result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
                                               fdn_list)
                 elif srrg_type == "degree" or srrg_type == "l1node":
                     for fdn in fdn_list:
                         request_uuid = str(uuid.uuid4()).replace("-", "")
                         single_fdn_list = [fdn]
-                        process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                        result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
                                                   single_fdn_list)
                 elif srrg_type == "line-card":
-                    for i in range (0,9):
+                    for i in range(0, 9):
                         chassis_num = "Chassis " + str(i)
-                        for j in range(0,16):
+                        for j in range(0, 16):
                             slot_num = "Slot " + str(j)
                             slot_fdns = []
                             for tmp_fdn in fdn_list:
@@ -102,16 +96,23 @@ class AjaxHandler(tornado.web.RequestHandler):
                                     slot_fdns.append(tmp_fdn['fdn'])
                             if len(slot_fdns) > 0:
                                 request_uuid = str(uuid.uuid4()).replace("-", "")
-                                process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
-                                                          slot_fdns)
-                time.sleep(10)
-                collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
-                process_srrgs.parse_ssrgs()
-                logging.info("Region is " + str(global_region))
-                process_srrgs.processl1nodes(region=global_region, type="Node")
-                process_srrgs.processl1links(region=global_region, type="Degree")
-                process_srrgs.processtopolinks(region=global_region)
-                response = {'action': 'assign-srrg', 'status': 'completed'}
+                                result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type,
+                                                          request_uuid, slot_fdns)
+
+                if result == 'OPERATION_PARTIAL':
+                    status = 'partial'
+                elif result == 'OPERATION_SUCCESSFUL':
+                    status = 'completed'
+                    time.sleep(10)
+                    collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
+                    process_srrgs.parse_ssrgs()
+                    logging.info("Region is " + str(global_region))
+                    process_srrgs.processl1nodes(region=global_region, type="Node")
+                    process_srrgs.processl1links(region=global_region, type="Degree")
+                    process_srrgs.processtopolinks(region=global_region)
+                else:
+                    status = 'failed'
+                response = {'action': 'assign-srrg', 'status': status}
                 logging.info(response)
                 self.write(json.dumps(response))
             except Exception as err:
@@ -143,7 +144,8 @@ class AjaxHandler(tornado.web.RequestHandler):
                         process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
                 elif type == "line-card":
                     for tmp_fdn in fdn_list:
-                            process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, tmp_fdn['fdn'], srrg_type)
+                        process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, tmp_fdn['fdn'],
+                                                                     srrg_type)
                 time.sleep(10)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
@@ -151,7 +153,7 @@ class AjaxHandler(tornado.web.RequestHandler):
                 process_srrgs.processl1nodes(region=global_region, type="Node")
                 process_srrgs.processl1links(region=global_region, type="Degree")
                 process_srrgs.processtopolinks(region=global_region)
-                response = {'action': 'unassign-srrg', 'status': 'success'}
+                response = {'action': 'unassign-srrg', 'status': 'completed'}
                 logging.info(response)
                 self.write(json.dumps(response))
             except Exception as err:
@@ -183,7 +185,7 @@ class AjaxHandler(tornado.web.RequestHandler):
             region = request['region']
             region_int = int(region)
             global_region = region_int
-            response = {'action': 'update-epnm', 'status': 'success'}
+            response = {'action': 'update-epnm', 'status': 'completed'}
             logging.info(response)
             self.write(json.dumps(response))
         else:
@@ -243,6 +245,7 @@ class AddDropTopoLinksHandler(tornado.web.RequestHandler):
         self.render("templates/topo_links_template_add_drop.html", port=args.port, topo_links_data=topo_links,
                     add_drop_pools=add_drop_pools, l1node=l1node)
 
+
 class LineCardTopoLinksHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -252,13 +255,6 @@ class LineCardTopoLinksHandler(tornado.web.RequestHandler):
         card_pools = methods.get_srrg_pools(6)
         self.render("templates/topo_links_template_line_card.html", port=args.port, topo_links_data=topo_links,
                     card_pools=card_pools)
-
-class DummyHandler(tornado.web.RequestHandler):
-
-    def get(self):
-        print(self.get_argument('foo', default="anna"))
-        print(self.get_argument('bar', default="leigh"))
-        pass
 
 
 class WebSocket(tornado.websocket.WebSocketHandler):
@@ -347,9 +343,7 @@ def main():
                 url(r'/topolinks-lc/static/(.*)',
                     tornado.web.StaticFileHandler,
                     dict(path=settings['static_path'])),
-                url(r'/ajax', AjaxHandler, name="ajax"),
-                url(r'/dummy/?', DummyHandler),
-                # url(r'/ajax/updates', AjaxUpdatesHandler, name="ajax_updates")
+                url(r'/ajax', AjaxHandler, name="ajax")
                 ]
 
     application = tornado.web.Application(handlers)

@@ -245,7 +245,8 @@ def assign_srrg(baseURL, epnmuser, epnmpassword, pool, srrg_type, uuid, link_fdn
     xml_fdn_list = ""
     for fdn in link_fdn_list:
         xml_fdn_list += "<p:resource-fdn>" + fdn + "</p:resource-fdn>" + "\n"
-    createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
+    result = createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, xml_fdn_list)
+    return result
 
 
 def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
@@ -519,6 +520,8 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
         fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
         logging.info("EPNM generated SRRG: " + fdn)
         logging.info("Result: " + result)
+        return result
     except Exception as err:
         logging.warning("Error parsing response")
         logging.warning(xmlresponse)
+        return
