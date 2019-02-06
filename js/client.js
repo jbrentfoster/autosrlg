@@ -325,7 +325,8 @@ function topolinks_line_card_srlg(form,btn,btn_text) {
             var fdn = {};
             var inputs = this.getElementsByTagName("input");
             fdn['fdn'] = this.id;
-            fdn['slot'] = this.getElementsByTagName("input")[1].value;
+            fdn['chassis'] = this.getElementsByTagName("input")[1].value;
+            fdn['slot'] = this.getElementsByTagName("input")[2].value;
             fdns.push(fdn);
         }
     });
@@ -552,7 +553,7 @@ var client = {
 
     buildtopolinkstable_line_card: function (topo_link_data) {
         var table = $('#topo_links_table'), row = null, data = null;
-        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th onclick="javascript:client.sortTable(1,\'topo_links_table\')">Slot</th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Line Card SRLGs</th><th>Incorrect SRLGs</th></thead>');
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-links"></th><th onclick="javascript:client.sortTable(1,\'topo_links_table\')">Chassis</th><th onclick="javascript:client.sortTable(2,\'topo_links_table\')">Slot</th><th>Node A/Port A</th><th>Node B/Port B</th><th>FDN</th><th>Line Card SRLGs</th><th>Incorrect SRLGs</th></thead>');
         thead.appendTo(table);
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
@@ -560,21 +561,26 @@ var client = {
         var topo_link_data_json = JSON.parse(topo_link_data);
         $.each(topo_link_data_json, function(k1, v1) {
             var node_slot;
+            var node_chassis;
             var node_a_type = v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].substring(0,6);
             var node_b_type = v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].substring(0,6);
             if (node_a_type == 'Optics') {
-                var node_slot = "Slot " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
+                node_chassis = "Chassis " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[0];
+                node_slot = "Slot " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
             }
             else if (node_b_type == 'Optics') {
-                var node_slot = "Slot " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
+                node_chassis = "Chassis " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[0];
+                node_slot = "Slot " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
             }
             var node_a = "<td>"+v1['Nodes'][0]['node'] + "</br>" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
             var node_b = "<td>"+v1['Nodes'][1]['node'] + "</br>" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
             var fdn = "<td>"+v1['fdn'].split('=')[2]+"</td>";
             var row = $('<tr id="'+v1['fdn']+'"></tr>');
-            var slot = '<td><input type="hidden" name="slot" value="' + node_slot + '"><td>'
+            var chassis = '<td><input type="hidden" name="chassis" value="' + node_chassis + '"><td>';
+            var slot = '<td><input type="hidden" name="slot" value="' + node_slot + '"><td>';
             var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+ fdn +'"></td>';
             $(checkbox_html).appendTo(row);
+            $("<td>"+node_chassis+"</td>").appendTo(row);
             $("<td>"+node_slot+"</td>").appendTo(row);
             $(node_a).appendTo(row);
             $(node_b).appendTo(row);
@@ -587,7 +593,6 @@ var client = {
                 $(srrg_lc_url).appendTo(row);
             }
             catch {
-//                console.log("No LC SRRG!");
                 $('<td></td>').appendTo(row);
             }
 
@@ -603,7 +608,7 @@ var client = {
             else {
                 $('<td></td>').appendTo(row);
             }
-
+            $(chassis).appendTo(row);
             $(slot).appendTo(row);
 
             row.appendTo(tbody);

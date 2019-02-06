@@ -92,16 +92,18 @@ class AjaxHandler(tornado.web.RequestHandler):
                         process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
                                                   single_fdn_list)
                 elif srrg_type == "line-card":
-                    for i in range(0,16):
-                        slot_num = "Slot " + str(i)
-                        slot_fdns = []
-                        for tmp_fdn in fdn_list:
-                            if slot_num == tmp_fdn['slot']:
-                                slot_fdns.append(tmp_fdn['fdn'])
-                        if len(slot_fdns) > 0:
-                            request_uuid = str(uuid.uuid4()).replace("-", "")
-                            process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
-                                                      slot_fdns)
+                    for i in range (0,9):
+                        chassis_num = "Chassis " + str(i)
+                        for j in range(0,16):
+                            slot_num = "Slot " + str(j)
+                            slot_fdns = []
+                            for tmp_fdn in fdn_list:
+                                if slot_num == tmp_fdn['slot'] and chassis_num == tmp_fdn['chassis']:
+                                    slot_fdns.append(tmp_fdn['fdn'])
+                            if len(slot_fdns) > 0:
+                                request_uuid = str(uuid.uuid4()).replace("-", "")
+                                process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                                          slot_fdns)
                 time.sleep(10)
                 collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
                 process_srrgs.parse_ssrgs()
