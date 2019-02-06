@@ -493,11 +493,6 @@ var client = {
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
         var origin   = window.location.origin;   // Returns base URL
-//        $('<th onclick="javascript:client.sortTable(0,\'topo_links_table\')">Node A</th> \
-//        <th onclick="javascript:client.sortTable(1,\'topo_links_table\')">Node B</th> \
-//        <th onclick="javascript:client.sortTable(2,\'topo_links_table\')">fdn</th> \
-//        <th onclick="javascript:client.sortTable(3,\'topo_links_table\')">Add/Drop SRLG</th> \
-//        <th onclick="javascript:client.sortTable(4,\'topo_links_table\')">Line Card SRLG</th>').appendTo(table);
         var topo_link_data_json = JSON.parse(topo_link_data);
         $.each(topo_link_data_json, function(k1, v1) {
             var node_a = "<td>"+v1['Nodes'][0]['node'] + "</br>" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
@@ -516,20 +511,8 @@ var client = {
                 $(srrg_ad_url).appendTo(row);
             }
             catch {
-//                console.log("No AD SRRG!");
                 $('<td></td>').appendTo(row);
             }
-
-//            try {
-//                var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
-//                var srrg_lc_url = '<td><a href="'+origin+'/srlg/'+srrg_lc+'" name = "'+srrg_lc+'">'+srrg_lc+'</a></td>';
-//                $(srrg_lc_url).appendTo(row);
-//            }
-//            catch {
-////                console.log("No LC SRRG!");
-//                $('<td></td>').appendTo(row);
-//            }
-
             parsed_url_list = [];
             $.each(v1['srrgs-incorrect'], function(k2,v2) {
                 var parsed = v2.split('=')[2];
@@ -598,8 +581,6 @@ var client = {
             $(node_a).appendTo(row);
             $(node_b).appendTo(row);
             $(fdn).appendTo(row);
-
-
             try {
                 var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
                 var srrg_lc_url = '<td><a href="'+origin+'/srlg/'+srrg_lc+'" name = "'+srrg_lc+'">'+srrg_lc+'</a></td>';
@@ -608,7 +589,6 @@ var client = {
             catch {
                 $('<td></td>').appendTo(row);
             }
-
             parsed_url_list = [];
             $.each(v1['srrgs-incorrect'], function(k2,v2) {
                 var parsed = v2.split('=')[2];
@@ -728,14 +708,12 @@ var client = {
             var pathname = window.location.pathname;
             var url      = window.location.href;     // Returns full URL
             var origin   = window.location.origin;   // Returns base URL
-
             var row = $('<tr id="'+v1['fdn']+'"></tr>');
             var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+v1['fdn']+'"></td>';
             $(checkbox_html).appendTo(row);
             $('<td>'+v1['Nodes'][0]+'</td>').appendTo(row);
             $('<td>'+v1['Nodes'][1]+'</td>').appendTo(row);
             $('<td>'+v1['fdn']+'</td>').appendTo(row);
-
             var parsed_url_list = [];
             $.each(v1['srrgs'], function(k2,v2) {
                 var parsed = v2.split('=')[2];
@@ -748,7 +726,6 @@ var client = {
             else {
                 $('<td></td>').appendTo(row);
             }
-
             parsed_url_list = [];
             $.each(v1['srrgs-conduit'], function(k2,v2) {
                 var parsed = v2.split('=')[2];
@@ -761,7 +738,6 @@ var client = {
             else {
                 $('<td></td>').appendTo(row);
             }
-
             parsed_url_list = [];
             $.each(v1['srrgs-incorrect'], function(k2,v2) {
                 var parsed = v2.split('=')[2];

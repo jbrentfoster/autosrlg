@@ -39,7 +39,7 @@
     <div><input type="hidden" name="l1node" value="{{l1node}}"></div>
     <div class="form-row">
         <div class="form-group col-md-3">
-            <select class="form-control" name="psline" id="psline-select">
+            <select class="form-control" name="psline" id="psline-select" onchange="this.form.submit()">
                 <option>PSLINE-81-1</option>
                 <option>PSLINE-81-2</option>
                 <option>PSLINE-81-6</option>
@@ -49,11 +49,6 @@
                 <option>PSLINE-2-6</option>
                 <option>PSLINE-2-7</option>
             </select>
-        </div>
-        <div class="form-group col-md-3">
-            <button type="submit" class="btn btn-success" style="width: 75%" id="psline-btn">
-                PSLINE
-            </button>
         </div>
     </div>
 </form>

@@ -4,6 +4,8 @@ import collectioncode.process_srrgs as process_srrgs
 import logging
 import traceback
 from server import clean_files as clean_files
+import uuid
+import time
 
 
 # def count(number):
@@ -15,6 +17,7 @@ def getl1nodes():
         l1nodes = json.load(f)
         f.close()
     return json.dumps(l1nodes)
+
 
 def getmplsnodes():
     with open("jsonfiles/4k-nodes_db.json", 'r', ) as f:
@@ -116,3 +119,99 @@ def collection(ajax_handler, request, global_region, baseURL, epnmuser, epnmpass
         finally:
             # Display the *original* exception
             traceback.print_tb(err.__traceback__)
+
+
+def assign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmpassword):
+    try:
+        pool_fdn = "MD=CISCO_EPNM!SRRGPL=" + request['pool-name']
+        fdn_list = request['fdns']
+        srrg_type = request['type']
+        result = 'unknown'
+        if srrg_type == "conduit" or srrg_type == 'add-drop':
+            request_uuid = str(uuid.uuid4()).replace("-", "")
+            result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                               fdn_list)
+        elif srrg_type == "degree" or srrg_type == "l1node":
+            for fdn in fdn_list:
+                request_uuid = str(uuid.uuid4()).replace("-", "")
+                single_fdn_list = [fdn]
+                result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                                   single_fdn_list)
+        elif srrg_type == "line-card":
+            for i in range(0, 9):
+                chassis_num = "Chassis " + str(i)
+                for j in range(0, 16):
+                    slot_num = "Slot " + str(j)
+                    slot_fdns = []
+                    for tmp_fdn in fdn_list:
+                        if slot_num == tmp_fdn['slot'] and chassis_num == tmp_fdn['chassis']:
+                            slot_fdns.append(tmp_fdn['fdn'])
+                    if len(slot_fdns) > 0:
+                        request_uuid = str(uuid.uuid4()).replace("-", "")
+                        result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type,
+                                                           request_uuid, slot_fdns)
+
+        if result == 'OPERATION_PARTIAL':
+            status = 'partial'
+        elif result == 'OPERATION_SUCCESSFUL':
+            status = 'completed'
+            time.sleep(10)
+            collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
+            process_srrgs.parse_ssrgs()
+            logging.info("Region is " + str(global_region))
+            process_srrgs.processl1nodes(region=global_region, type="Node")
+            process_srrgs.processl1links(region=global_region, type="Degree")
+            process_srrgs.processtopolinks(region=global_region)
+        else:
+            status = 'failed'
+        response = {'action': 'assign-srrg', 'status': status}
+        logging.info(response)
+        ajax_handler.write(json.dumps(response))
+    except Exception as err:
+        logging.info("Exception caught!!!")
+        logging.info(err)
+        response = {'action': 'assign-srrg', 'status': 'failed'}
+        logging.info(response)
+        ajax_handler.write(json.dumps(response))
+
+
+def unassign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmpassword):
+    try:
+        type = request['type']
+        if type == 'conduit':
+            srrg_type = 'srrgs-conduit'
+        elif type == 'link' or type == 'l1node':
+            srrg_type = 'srrgs'
+        elif type == 'add-drop':
+            srrg_type = 'srrgs-ad'
+        elif type == 'line-card':
+            srrg_type = 'srrgs-lc'
+        fdn_list = request['fdns']
+        if type == 'conduit' or type == 'link':
+            for fdn in fdn_list:
+                process_srrgs.unassign_single_l1link_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+        elif type == 'l1node':
+            for fdn in fdn_list:
+                process_srrgs.unassign_single_l1node_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+        elif type == 'add-drop':
+            for fdn in fdn_list:
+                process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, fdn, srrg_type)
+        elif type == "line-card":
+            for tmp_fdn in fdn_list:
+                process_srrgs.unassign_single_topolink_srrgs(baseURL, epnmuser, epnmpassword, tmp_fdn['fdn'],
+                                                             srrg_type)
+        time.sleep(10)
+        collect.collectSRRGsOnly(baseURL, epnmuser, epnmpassword)
+        process_srrgs.parse_ssrgs()
+        logging.info("Region is " + str(global_region))
+        process_srrgs.processl1nodes(region=global_region, type="Node")
+        process_srrgs.processl1links(region=global_region, type="Degree")
+        process_srrgs.processtopolinks(region=global_region)
+        response = {'action': 'unassign-srrg', 'status': 'completed'}
+        logging.info(response)
+        ajax_handler.write(json.dumps(response))
+    except Exception as err:
+        logging.warning("Exception during unassign-srrg operation!")
+        response = {'action': 'unassign-srrg', 'status': 'failed'}
+        logging.info(response)
+        ajax_handler.write(json.dumps(response))
