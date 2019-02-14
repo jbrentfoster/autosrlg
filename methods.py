@@ -85,6 +85,13 @@ def gettopolinks_mpls_node(node_name):
         for node in val1['Nodes']:
             if node['node'] == node_name:
                 node_topo_links[key1] = val1
+    # with open("jsonfiles/topolinks_physical_db.json", 'r', encoding="utf8") as f:
+    #     topo_links = json.load(f)
+    #     f.close()
+    # for key1, val1 in topo_links.items():
+    #     for node in val1['Nodes']:
+    #         if node['node'] == node_name:
+    #             node_topo_links[key1+"-phy"] = val1
     if node_name == "":
         return json.dumps(topo_links)
     else:
@@ -106,6 +113,7 @@ def collection(ajax_handler, request, global_region, baseURL, epnmuser, epnmpass
         process_srrgs.processl1nodes(region=global_region, type="Node")
         process_srrgs.processl1links(region=global_region, type="Degree")
         process_srrgs.processtopolinks(region=global_region)
+        process_srrgs.processtopolinks_physical(region=global_region)
         ajax_handler.send_message_open_ws("Completed collecting data from EPNM...")
         response = {'action': 'collect', 'status': 'completed'}
         logging.info(response)
@@ -162,6 +170,7 @@ def assign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmpas
             process_srrgs.processl1nodes(region=global_region, type="Node")
             process_srrgs.processl1links(region=global_region, type="Degree")
             process_srrgs.processtopolinks(region=global_region)
+            process_srrgs.processtopolinks_physical(region=global_region)
         else:
             status = 'failed'
         response = {'action': 'assign-srrg', 'status': status}
@@ -207,6 +216,7 @@ def unassign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmp
         process_srrgs.processl1nodes(region=global_region, type="Node")
         process_srrgs.processl1links(region=global_region, type="Degree")
         process_srrgs.processtopolinks(region=global_region)
+        process_srrgs.processtopolinks_physical(region=global_region)
         response = {'action': 'unassign-srrg', 'status': 'completed'}
         logging.info(response)
         ajax_handler.write(json.dumps(response))

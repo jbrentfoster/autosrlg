@@ -20,6 +20,7 @@ def runcollector(baseURL, epnmuser, epnmpassword):
     collectSRRG_pools_json(baseURL, epnmuser, epnmpassword)
     logging.info("Collecting Topological Links...")
     collectTopoLinks_json(baseURL, epnmuser, epnmpassword)
+    collectTopoLinksPhysical_json(baseURL, epnmuser, epnmpassword)
 
 def collectSRRGsOnly(baseURL, epnmuser, epnmpassword):
     logging.info("Collecting SRRGs...")
@@ -238,13 +239,6 @@ def collectSRRG_pools_json(baseURL, epnmuser, epnmpassword):
         json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 
-# def collectSRRG(baseURL, epnmuser, epnmpassword, srrg):
-#     fdn = "fdn=MD=CISCO_EPNM!SRRG=" + srrg
-#     uri = "/data/v1/cisco-resource-network:shared-risk-resource-group?" + fdn
-#     jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
-#     return jsonresponse
-
-
 def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
     incomplete = True
     startindex = 0
@@ -288,33 +282,72 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             if len(endpointlist) > 1:
                 for ep in endpointlist:
                     endpoint = ep['topo.endpoint-ref']
-                    # print "Endpoint is: " + endpoint
                     node = endpoint.split('!')[1].split('=')[1]
                     ctp = endpoint.split('!')[2].split('=')[2]
-                    # MD=CISCO_EPNM!ND=NCS4K-Site3!CTP=name=Optics0/5/0/11;lr=lr-optical-section
                     entry = {'node': node, 'ctp': ctp}
                     nodes.append(entry)
                 if len(nodes) > 1:
                     topolinks['Link' + str(i)] = dict([('fdn', fdn)])
                     topolinks['Link' + str(i)]['Nodes'] = nodes
                 i += 1
-            # try:
-            #     latitude = node['nd.latitude']
-            #     longitude = node['nd.longitude']
-            # except KeyError:
-            #     logging.error("Could not get longitude or latitidude for node " + nodeName + ".  Setting to 0.0 and 0.0")
-            #     latitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
-            #     longitude = {'fdtn.double-amount': 0.0, 'fdtn.units': 'DEGREES_DECIMAL'}
-            # l1nodes['Node' + str(i)] = dict([('Name', nodeName), ('fdn',fdn), ('Latitude', latitude), ('Longitude', longitude)])
-            # i += 1
-        # f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
         json.dump(topolinks, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
-    # try:
-    #     shutil.copy('jsonfiles/topolinks_add_drop_db.json', 'jsonfiles/topolinks_line_card_db.json')
-    # except Exception as err:
-    #     logging.info("No log file to copy...")
 
+
+def collectTopoLinksPhysical_json(baseURL, epnmuser, epnmpassword):
+    incomplete = True
+    startindex = 0
+    jsonmerged = {}
+    while incomplete:
+        uri = "/data/v1/cisco-resource-network:topological-link?topo-layer=physical-link-layer&.startIndex=" + str(
+            startindex)
+        jsonresponse = collectioncode.utils.rest_get_json(baseURL, uri, epnmuser, epnmpassword)
+        jsonaddition = json.loads(jsonresponse)
+        firstindex = jsonaddition['com.response-message']['com.header']['com.firstIndex']
+        lastindex = jsonaddition['com.response-message']['com.header']['com.lastIndex']
+        if (lastindex - firstindex) == 99 and lastindex != -1:
+            startindex += 100
+            merge(jsonmerged, jsonaddition)
+        elif lastindex == -1:
+            incomplete = False
+        else:
+            incomplete = False
+            merge(jsonmerged, jsonaddition)
+
+    with open("jsongets/topo-links-physical.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(jsonmerged, f, sort_keys=True, indent=4, separators=(',', ': '))
+        f.close()
+
+    with open("jsongets/topo-links-physical.json", 'r', encoding="utf8") as f:
+        jsonresponse = f.read()
+        f.close()
+
+    thejson = json.loads(jsonresponse)
+
+    topolinks = {}
+    i = 1
+    with open("jsonfiles/topolinks_physical_db.json", 'w', encoding="utf8") as f:
+        for link in thejson['com.response-message']['com.data']['topo.topological-link']:
+            fdn = link['topo.fdn']
+            logging.info("Processing topological link " + fdn)
+            nodes = []
+            endpointlist = link['topo.endpoint-list']['topo.endpoint']
+
+            if len(endpointlist) > 1:
+                for ep in endpointlist:
+                    endpoint = ep['topo.endpoint-ref']
+                    # print "Endpoint is: " + endpoint
+                    node = endpoint.split('!')[1].split('=')[1]
+                    ctp = endpoint.split('!')[2].split('=')[2]
+                    entry = {'node': node, 'ctp': ctp}
+                    nodes.append(entry)
+                if len(nodes) > 1:
+                    topolinks['Link' + str(i)] = dict([('fdn', fdn)])
+                    topolinks['Link' + str(i)]['Nodes'] = nodes
+                i += 1
+        json.dump(topolinks, f, sort_keys=True, indent=4, separators=(',', ': '))
+        f.close()
 
 def merge(a, b):
     "merges b into a"

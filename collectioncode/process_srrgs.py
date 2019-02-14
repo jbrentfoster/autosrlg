@@ -357,6 +357,38 @@ def processtopolinks(region):
         f.close()
 
 
+def processtopolinks_physical(region):
+    with open("jsonfiles/topolinks_physical_db.json", 'r', encoding="utf8") as f:
+        topolinks = json.load(f)
+        f.close()
+
+    for k1, v1 in topolinks.items():
+        logging.info("")
+        logging.info("Matching topo link " + v1['fdn'])
+        matched_srrgs = getLinkSRRGs(v1['fdn'])
+        srrg_lc_list = []
+        wrong_srrg_list = []
+        if len(matched_srrgs) > 0:
+            logging.info("Matched an SRRG...")
+            for srrg in matched_srrgs:
+                logging.info(srrg['srrg.fdn'])
+                logging.info("Region is: " + str(srrg['region-dec']))
+                logging.info("Type is: " + srrg['type-string'])
+                if srrg['region-dec'] == region and srrg['type-string'] == 'Card':
+                    logging.info("Region & type matches, link db updated.")
+                    srrg_lc_list.append(srrg['srrg.fdn'])
+                else:
+                    logging.info("Region and/or type doesn't match!")
+                    wrong_srrg_list.append(srrg['srrg.fdn'])
+        v1['srrgs-lc'] = srrg_lc_list
+        v1['srrgs-incorrect'] = wrong_srrg_list
+
+    with open("jsonfiles/topolinks_physical_db.json", 'w', encoding="utf8") as f:
+        # f.write(json.dumps(topolinks, f, sort_keys=True, indent=4, separators=(',', ': ')))
+        json.dump(topolinks, f, sort_keys=True, indent=4, separators=(',', ': '))
+        f.close()
+
+
 def generatetopolink_add_drop_srrgs(baseURL, epnmuser, epnmpassword, pool):
     with open("jsonfiles/l1-nodes_db.json", 'r', encoding="utf8") as f:
         l1nodes = json.load(f)

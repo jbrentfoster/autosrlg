@@ -554,23 +554,29 @@ var client = {
         var tbody = $('<tbody></tbody>');
         tbody.appendTo(table);
         var origin   = window.location.origin;   // Returns base URL
+        var node_name = getUrlVars()['mplsnode'];
         var topo_link_data_json = JSON.parse(topo_link_data);
         $.each(topo_link_data_json, function(k1, v1) {
             var node_slot;
             var node_chassis;
+            var node_a = "<td>"+v1['Nodes'][0]['node'] + "</br>" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
+            var node_a_name = v1['Nodes'][0]['node']
+            var node_b = "<td>"+v1['Nodes'][1]['node'] + "</br>" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
+            var node_b_name = v1['Nodes'][1]['node']
+            var fdn = "<td>"+v1['fdn'].split('=')[2]+"</td>";
             var node_a_type = v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].substring(0,6);
             var node_b_type = v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].substring(0,6);
-            if (node_a_type == 'Optics') {
-                node_chassis = "Chassis " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[0];
-                node_slot = "Slot " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
+            if (node_a_name == node_name) {
+                var node_chassis_full_string = v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('/')[0];
+                node_chassis = "Chassis " + node_chassis_full_string.substr(node_chassis_full_string.length - 1);
+                node_slot = "Slot " + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0].split('/')[1];
             }
-            else if (node_b_type == 'Optics') {
-                node_chassis = "Chassis " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[0];
-                node_slot = "Slot " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('Optics')[1].split('/')[1];
+            else if (node_b_name == node_name) {
+                var node_chassis_full_string = v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('/')[0];
+                node_chassis = "Chassis " + node_chassis_full_string.substr(node_chassis_full_string.length - 1);
+                node_slot = "Slot " + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0].split('/')[1];
             }
-            var node_a = "<td>"+v1['Nodes'][0]['node'] + "</br>" + v1['Nodes'][0]['ctp'].split('&')[0].split(';')[0]+"</td>";
-            var node_b = "<td>"+v1['Nodes'][1]['node'] + "</br>" + v1['Nodes'][1]['ctp'].split('&')[0].split(';')[0]+"</td>";
-            var fdn = "<td>"+v1['fdn'].split('=')[2]+"</td>";
+
             var row = $('<tr id="'+v1['fdn']+'"></tr>');
             var chassis = '<td><input type="hidden" name="chassis" value="' + node_chassis + '"><td>';
             var slot = '<td><input type="hidden" name="slot" value="' + node_slot + '"><td>';
