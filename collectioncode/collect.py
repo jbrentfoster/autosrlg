@@ -329,23 +329,24 @@ def collectTopoLinksPhysical_json(baseURL, epnmuser, epnmpassword):
     i = 1
     with open("jsonfiles/topolinks_physical_db.json", 'w', encoding="utf8") as f:
         for link in thejson['com.response-message']['com.data']['topo.topological-link']:
-            fdn = link['topo.fdn']
-            logging.info("Processing topological link " + fdn)
-            nodes = []
-            endpointlist = link['topo.endpoint-list']['topo.endpoint']
+            if isinstance(link, dict):
+                fdn = link['topo.fdn']
+                logging.info("Processing topological link " + fdn)
+                nodes = []
+                endpointlist = link['topo.endpoint-list']['topo.endpoint']
 
-            if len(endpointlist) > 1:
-                for ep in endpointlist:
-                    endpoint = ep['topo.endpoint-ref']
-                    # print "Endpoint is: " + endpoint
-                    node = endpoint.split('!')[1].split('=')[1]
-                    ctp = endpoint.split('!')[2].split('=')[2]
-                    entry = {'node': node, 'ctp': ctp}
-                    nodes.append(entry)
-                if len(nodes) > 1:
-                    topolinks['Link' + str(i)] = dict([('fdn', fdn)])
-                    topolinks['Link' + str(i)]['Nodes'] = nodes
-                i += 1
+                if len(endpointlist) > 1:
+                    for ep in endpointlist:
+                        endpoint = ep['topo.endpoint-ref']
+                        # print "Endpoint is: " + endpoint
+                        node = endpoint.split('!')[1].split('=')[1]
+                        ctp = endpoint.split('!')[2].split('=')[2]
+                        entry = {'node': node, 'ctp': ctp}
+                        nodes.append(entry)
+                    if len(nodes) > 1:
+                        topolinks['Link' + str(i)] = dict([('fdn', fdn)])
+                        topolinks['Link' + str(i)]['Nodes'] = nodes
+                    i += 1
         json.dump(topolinks, f, sort_keys=True, indent=4, separators=(',', ': '))
         f.close()
 

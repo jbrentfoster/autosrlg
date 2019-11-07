@@ -1,0 +1,5 @@
+*.pyc
+jsonfiles/
+jsongets/
+.idea/
+collection.log
