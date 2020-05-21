@@ -491,7 +491,8 @@ def deleteSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         logging.info("XML parsing error.  The received message from websocket is not XML.")
         return
     except Exception as err:
-        logging.warn("Operation failed.")
+        logging.warning("Error parsing response")
+        logging.warning(xmlresponse)
         return
 
     result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
@@ -521,10 +522,15 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         logging.warning("Operation failed.")
         return
 
-    result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
-    fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
-    logging.info(fdn)
-    logging.info(result)
+    try:
+        result = thexml.getElementsByTagName("ns34:status")[0].firstChild.nodeValue
+        fdn = thexml.getElementsByTagName("ns34:fdn")[0].firstChild.nodeValue
+        logging.info(fdn)
+        logging.info(result)
+    except:
+        logging.warning("Error parsing response")
+        logging.warning(xmlresponse)
+        return
 
 
 def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn):
@@ -548,8 +554,8 @@ def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, 
         return
 
     try:
-        result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
-        fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
+        result = thexml.getElementsByTagName("ns34:status")[0].firstChild.nodeValue
+        fdn = thexml.getElementsByTagName("ns34:fdn")[0].firstChild.nodeValue
         logging.info("EPNM generated SRRG: " + fdn)
         logging.info("Result: " + result)
         return result

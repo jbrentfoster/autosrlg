@@ -24,12 +24,12 @@ import time
 # epnmipaddr = args.epnm_ipaddr
 # epnmuser = args.epnm_user
 # epnmpassword = args.epnm_pass
-epnmipaddr = "10.135.7.223"
+epnmipaddr = "10.135.7.222"
 baseURL = "https://" + epnmipaddr + "/restconf"
 epnmuser = "root"
 epnmpassword = "Epnm1234"
 open_websockets = []
-global_region = 1
+global_region = 4
 
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -62,6 +62,7 @@ class AjaxHandler(tornado.web.RequestHandler):
             response = {'status': 'failed', 'error': err}
             logging.info(response)
             self.write(json.dumps(response))
+            return
 
         if action == 'collect':
             methods.collection(self, request, global_region, baseURL, epnmuser, epnmpassword)

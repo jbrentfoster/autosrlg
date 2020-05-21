@@ -67,7 +67,7 @@ def rest_post_xml(baseURL, uri, thexml, user, password):
     logging.info(restURI)
     try:
         r = requests.post(restURI, data=thexml, headers=headers, proxies=proxies, auth=(user, password), verify=False)
-        logging.error("HTTP response code is: " + str(r.status_code))
+        logging.info("HTTP response code is: " + str(r.status_code))
         if r.status_code == 200:
             response_xml = xml.dom.minidom.parseString(r.content)
             return response_xml.toprettyxml()
