@@ -173,8 +173,16 @@ def collectL1links_json(baseURL, epnmuser, epnmpassword):
             fdn = link['topo.fdn']
             logging.info("Processing link " + fdn)
             nodes = []
-            endpointlist = link['topo.endpoint-list']['topo.endpoint']
-
+            try:
+                endpointlist = link['topo.endpoint-list']['topo.endpoint']
+            except Exception as err:
+                logging.error("L1 link does not have valid topo.end-point-list, skipping this link: " + fdn)
+                continue
+            try:
+                topo_capacity = link['topo.total-capacity']
+            except Exception as err:
+                # link is not a 2k ROADM link, ignore it
+                continue
             if len(endpointlist) > 1:
                 for ep in endpointlist:
                     endpoint = ep['topo.endpoint-ref']
@@ -277,8 +285,11 @@ def collectTopoLinks_json(baseURL, epnmuser, epnmpassword):
             fdn = link['topo.fdn']
             logging.info("Processing topological link " + fdn)
             nodes = []
-            endpointlist = link['topo.endpoint-list']['topo.endpoint']
-
+            try:
+                endpointlist = link['topo.endpoint-list']['topo.endpoint']
+            except Exception as err:
+                logging.error("Topo link does not have valid topo.end-point-list, skipping this link: " + fdn)
+                continue
             if len(endpointlist) > 1:
                 for ep in endpointlist:
                     endpoint = ep['topo.endpoint-ref']

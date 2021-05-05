@@ -24,10 +24,10 @@ import time
 # epnmipaddr = args.epnm_ipaddr
 # epnmuser = args.epnm_user
 # epnmpassword = args.epnm_pass
-epnmipaddr = "10.135.7.222"
+epnmipaddr = "10.201.1.246"
 baseURL = "https://" + epnmipaddr + "/restconf"
 epnmuser = "root"
-epnmpassword = "Epnm1234"
+epnmpassword = "Public123"
 open_websockets = []
 global_region = 4
 
