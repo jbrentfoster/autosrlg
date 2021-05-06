@@ -1,0 +1,38 @@
+{% extends "base_template.html" %}
+{% autoescape None %}
+<!--<link>-->
+{% block content %}
+<h3>All SRLGs</h3>
+<p>Current SRLGs in EPNM Inventory</p>
+<div class="alert alert-danger alert-dismissible collapse" role="alert" id="failed">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Failed!</strong> The request to the server failed.  Try again.
+</div>
+<div class="alert alert-warning alert-dismissible collapse" role="alert" id="partial">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Partial</strong> The request to the server resulted in partial completion.  Please check server logs.
+</div>
+<div class="alert alert-success alert-dismissible collapse" role="alert" id="completed">
+    <a href="#" class="close" data-hide="alert" aria-label="close" >&times;</a>
+  <strong>Sucess</strong> The request to the server completed successfully.
+</div>
+<form id="srlg-delete-form">
+    <div><input type="hidden" name="action" value="delete-srrg"></div>
+    <div class="form-row">
+        <div class="form-group col-md-5">
+            <button type="submit" class="btn btn-success" style="width: 33%" id="srlg-delete-btn" disabled>
+                Delete
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="table" id="tablediv">
+    <table id="allsrlgtable"></table>
+</div>
+
+<script type="text/javascript">
+    client.buildAllSRLGTable('{{ all_srrg_data }}');
+</script>
+
+{% end %}

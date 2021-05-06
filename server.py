@@ -29,7 +29,7 @@ baseURL = "https://" + epnmipaddr + "/restconf"
 epnmuser = "root"
 epnmpassword = "Public123"
 open_websockets = []
-global_region = 4
+global_region = 1
 
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -70,6 +70,12 @@ class AjaxHandler(tornado.web.RequestHandler):
             methods.assign_srrg(self, request, global_region, baseURL, epnmuser, epnmpassword)
         elif action == 'unassign-srrg':
             methods.unassign_srrg(self, request, global_region, baseURL, epnmuser, epnmpassword)
+        elif action == 'delete-srrg':
+            result = methods.delete_srrg(request, global_region, baseURL, epnmuser, epnmpassword)
+            self.write(json.dumps(result))
+        elif action == 'get-all-srrgs':
+            all_srrgs = methods.getallsrrgs()
+            self.write(json.dumps(all_srrgs))
         elif action == 'get-l1nodes':
             l1nodes = methods.getl1nodes()
             self.write(json.dumps(l1nodes))
@@ -144,6 +150,11 @@ class MPLSNodesHandler(tornado.web.RequestHandler):
         mpls_nodes = methods.getmplsnodes()
         self.render("templates/mpls_nodes_template.html", port=args.port, mpls_nodes_data=mpls_nodes)
 
+class AllSRLGHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        all_srrg_data = methods.getallsrrgs()
+        self.render("templates/all_srlg_template.html", port=args.port, all_srrg_data=all_srrg_data)
 
 class AddDropTopoLinksHandler(tornado.web.RequestHandler):
 
@@ -245,6 +256,7 @@ def main():
                 url(r'/roadmlinks', ROADMLinksHandler, name="roadm_links"),
                 url(r'/roadmnodes', ROADMNodesHandler, name="roadm_nodes"),
                 url(r'/mplsnodes', MPLSNodesHandler, name="mpls_nodes"),
+                url(r'/allsrlg', AllSRLGHandler, name="all_srlg"),
                 url(r'/topolinks-ad/?', AddDropTopoLinksHandler, name="ad-topo_links"),
                 url(r'/topolinks-ad/static/(.*)',
                     tornado.web.StaticFileHandler,

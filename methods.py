@@ -50,6 +50,35 @@ def getsrlg(srlg):
     return None
 
 
+def getallsrrgs():
+    with open("jsonfiles/SRRG_db.json", 'r', encoding="utf8") as f:
+        srrgs = json.load(f)
+        f.close()
+    all_srrgs = {}
+    i = 1
+    for srrg in srrgs['com.response-message']['com.data']['srrg.srrg-attributes']:
+        tmp_srrg = {}
+        tmp_srrg_resources_list = []
+        tmp_name = "SRLG"+ str(i)
+        tmp_srrg['SRLG-ID'] = str(srrg['srrg.srrg-id'])
+        tmp_srrg['SRLG-Type'] = srrg['type-string']
+        try:
+            tmp_srrg_resources = srrg['srrg.resource-list']['srrg.resource']
+            if isinstance(tmp_srrg_resources, dict):
+                tmp_fdn = tmp_srrg_resources['srrg.resource-fdn']
+                tmp_srrg_resources_list.append(tmp_fdn)
+            elif isinstance(tmp_srrg_resources, list):
+                for resource in tmp_srrg_resources:
+                    tmp_srrg_resources_list.append(resource['srrg.resource-fdn'])
+        except Exception as err:
+            # srrg resource list is empty
+            pass
+        tmp_srrg['resources'] = tmp_srrg_resources_list
+        all_srrgs[tmp_name] = tmp_srrg
+        i += 1
+    return json.dumps(all_srrgs)
+
+
 def getl1links():
     with open("jsonfiles/l1-links_db.json", 'r', encoding="utf8") as f:
         l1links = json.load(f)
@@ -225,3 +254,15 @@ def unassign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmp
         response = {'action': 'unassign-srrg', 'status': 'failed'}
         logging.info(response)
         ajax_handler.write(json.dumps(response))
+
+
+def delete_srrg( request, global_region, baseURL, epnmuser, epnmpassword):
+    success = True
+    response = {'action': 'delete-srrg', 'status': 'completed'}
+    for srrg in request['srrgs']:
+        tmp_fdn = "MD=CISCO_EPNM!SRRG=" + srrg
+        result = process_srrgs.deleteSRRG(baseURL, epnmuser, epnmpassword, tmp_fdn)
+        if result == False:
+            success = False
+            response = {'action': 'delete-srrg', 'status': 'failed'}
+    return response

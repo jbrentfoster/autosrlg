@@ -42,6 +42,10 @@
         buttonpressed = $(this);
     });
 
+    $("#srlg-delete-btn").on("click", function() {
+        buttonpressed = $(this);
+    });
+
     //Functions for form submission
     $("#collectform").on("submit", function() {
         console.log("Collection button run_collection called from form submit!");
@@ -98,6 +102,13 @@
         console.log("Topolinks add drop unassign button called from form submit!");
         btn_text = buttonpressed.text();
         topolinks_add_drop_srlg($(this),buttonpressed,btn_text);
+        return false;
+    });
+
+    $("#srlg-delete-form").on("submit", function() {
+        console.log("SRLG delete button called from form submit!");
+        btn_text = buttonpressed.text();
+        delete_srlg($(this),buttonpressed,btn_text);
         return false;
     });
 
@@ -315,6 +326,46 @@ function topolinks_add_drop_srlg(form,btn,btn_text) {
             $("#topo_links_table thead").remove();
             $("#topo_links_table tbody").remove();
             client.buildtopolinkstable_add_drop(response);
+        });
+        btn.empty();
+        btn.text(btn_text);
+        btn.removeAttr("disabled");
+    });
+}
+
+function delete_srlg(form,btn,btn_text) {
+    var formdata = form.form2Dict();
+    var btn_spinner_html = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>' + btn_text;
+    btn.html(btn_spinner_html);
+    btn.attr("disabled","disabled");
+    var request={};
+    var srlgs = [];
+    $('#allsrlgtable').find('tr').filter(':has(:checkbox:checked)').each(function(){
+        if(this.id != "") {
+            srlgs.push(this.id);
+        }
+    });
+    request['action'] = formdata['action'];
+    request['srrgs'] = srlgs;
+    jQuery().postJSON("/ajax", request, function(response) {
+        console.log("Callback to delete srlg request!");
+        console.log(response);
+        if (response.status == 'failed') {
+            $('#failed').show();
+        }
+        else if(response.status == 'partial') {
+            $('#partial').show();
+        }
+        else if(response.status == 'completed') {
+            $('#completed').show();
+        }
+        var newrequest = {};
+        newrequest['action'] = "get-all-srrgs";
+        jQuery().postJSON("/ajax", newrequest, function(response) {
+            console.log("Callback to update SRLG table!");
+            $("#allsrlgtable thead").remove();
+            $("#allsrlgtable tbody").remove();
+            client.buildAllSRLGTable(response);
         });
         btn.empty();
         btn.text(btn_text);
@@ -832,6 +883,51 @@ var client = {
                 });
                 $('<td>'+fdn_string+'</td>').appendTo(row);
                 row.appendTo(table);
+            }
+        });
+    },
+
+    buildAllSRLGTable: function (all_srlg_data) {
+        var table = $('#allsrlgtable'), row = null, data = null;
+        var thead = $('<thead><th style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="select-all-srlg"></th><th>SRLG ID</th><th>SRLG Type</th><th>Resources</></thead>');
+        thead.appendTo(table);
+        var tbody = $('<tbody></tbody>');
+        tbody.appendTo(table);
+        var srlg_data_json = JSON.parse(all_srlg_data);
+        $.each(srlg_data_json, function(k1, v1) {
+            var pathname = window.location.pathname;
+            var url      = window.location.href;     // Returns full URL
+            var origin   = window.location.origin;   // Returns base URL
+            var row = $('<tr id="'+v1['SRLG-ID']+'"></tr>');
+            var checkbox_html = '<td style="text-align: center; vertical-align: middle;"><input type="checkbox" class="form-check-input" id="'+v1['SRLG-ID']+'"></td>';
+            $(checkbox_html).appendTo(row);
+            srrg_url = '<td><a href="'+origin+'/srlg/'+v1['SRLG-ID']+'" name = "'+v1['SRLG-ID']+'">'+v1['SRLG-ID']+'</a></br></td>';
+            $(srrg_url).appendTo(row);
+            $('<td>'+v1['SRLG-Type']+'</td>').appendTo(row);
+            var parsed_resource_list = [];
+            $.each(v1['resources'], function(k2,v2) {
+//                var parsed = v2.split('=')[2];
+                parsed_resource_list += v2 + '</br>';
+            });
+            if (parsed_resource_list.length > 0) {
+                var resources = "<td>"+ parsed_resource_list + "</td>";
+                $(resources).appendTo(row);
+            }
+            else {
+                $('<td></td>').appendTo(row);
+            }
+            row.appendTo(tbody);
+        });
+        $('#select-all-srlg').click(function (e) {
+            $(this).closest('#allsrlgtable').find('td input:checkbox').prop('checked', this.checked);
+        });
+        $(".form-check-input").click(function (e) {
+            var btn_delete = $("#srlg-delete-btn");
+            if ($(".form-check-input").is(":checked")) {
+                btn_delete.prop('disabled', false);
+            }
+            else {
+                btn_delete.prop('disabled', true);
             }
         });
     },

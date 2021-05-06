@@ -476,29 +476,35 @@ def generatetopolink_line_card_srrgs(baseURL, epnmuser, epnmpassword, pool):
                         # raw_input("Press ENTER to continue...")
 
 
-def deleteSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
-    with open("collectioncode/post-srrg.xml", 'r') as f:
+def deleteSRRG(baseURL, epnmuser, epnmpassword, fdn):
+    with open("collectioncode/delete-srrg.xml", 'r') as f:
         xmlbody = f.read()
         f.close()
     logging.info("Attempting to delete SRRG: " + fdn)
-    newxmlbody = xmlbody.format(fdn=fdn, rsfdn=rsfdn)
+    newxmlbody = xmlbody.format(fdn=fdn)
+    logging.info(newxmlbody)
     uri = "/operations/v1/cisco-resource-activation:delete-shared-risk-resource-group"
     xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
-
+    logging.info(xmlresponse)
     try:
         thexml = xml.dom.minidom.parseString(xmlresponse)
     except xml.parsers.expat.ExpatError as err:
         logging.info("XML parsing error.  The received message from websocket is not XML.")
-        return
+        return False
     except Exception as err:
         logging.warning("Error parsing response")
         logging.warning(xmlresponse)
-        return
+        return False
 
-    result = thexml.getElementsByTagName("ns19:status")[0].firstChild.nodeValue
-    fdn = thexml.getElementsByTagName("ns19:fdn")[0].firstChild.nodeValue
-    logging.info(fdn)
-    logging.info(result)
+    try:
+        result = thexml.getElementsByTagName("ns34:status")[0].firstChild.nodeValue
+        fdn = thexml.getElementsByTagName("ns34:fdn")[0].firstChild.nodeValue
+        logging.info(fdn)
+        logging.info(result)
+        return True
+    except Exception as err:
+        logging.warning("Deleting SRRG failed!")
+        return False
 
 
 def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):

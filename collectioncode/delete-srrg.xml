@@ -1,0 +1,3 @@
+<p:shared-risk-resource-group-config xmlns:p="urn:cisco:params:xml:ns:yang:sb:srrg:v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:cisco:params:xml:ns:yang:sb:srrg:v1 cisco-srrg.xsd ">
+            <p:fdn>{fdn}</p:fdn>
+</p:shared-risk-resource-group-config>

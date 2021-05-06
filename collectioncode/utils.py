@@ -74,6 +74,8 @@ def rest_post_xml(baseURL, uri, thexml, user, password):
         else:
             logging.warning("Failed XML post!")
             logging.warning("HTTP status code: " + str(r.status_code))
+            response_xml = xml.dom.minidom.parseString(r.content)
+            return response_xml.toprettyxml()
             # raise errors.InputError(restURI, "HTTP status code: " + str(r.status_code) + "\n" + r.content)
     except errors.InputError as err:
         logging.error("Exception raised: " + str(type(err)))
