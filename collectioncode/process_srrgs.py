@@ -249,6 +249,14 @@ def assign_srrg(baseURL, epnmuser, epnmpassword, pool, srrg_type, uuid, link_fdn
     return result
 
 
+def assign_existing_srrg(baseURL, epnmuser, epnmpassword, srrg_fdn, fdn_list):
+    # srrg_fdn = "MD=CISCO_EPNM!SRRG={}".format(srrg_id)
+    xml_fdn_list = ""
+    for fdn in fdn_list:
+        xml_fdn_list += "<p:resource-fdn>" + fdn + "</p:resource-fdn>" + "\n"
+    result = updateSRRG(baseURL, epnmuser, epnmpassword, srrg_fdn, xml_fdn_list)
+    return result
+
 def unassignl1link_srrgs(baseURL, epnmuser, epnmpassword, srrg_type):
     # srrg_type should be either 'srrgs' or srrgs-incorrect
     with open("jsonfiles/l1-links_db.json", 'r', encoding="utf8") as f:
@@ -538,6 +546,37 @@ def unassignSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
         logging.warning(xmlresponse)
         return
 
+
+def updateSRRG(baseURL, epnmuser, epnmpassword, fdn, rsfdn):
+    with open("collectioncode/post-srrg-update.xml", 'r') as f:
+        xmlbody = f.read()
+        f.close()
+    logging.info("Attempting to update SRRG: " + fdn)
+    newxmlbody = xmlbody.format(fdn=fdn, rsfdn=rsfdn)
+    logging.info(newxmlbody)
+    uri = "/operations/v1/cisco-resource-activation:assign-shared-risk-resource-group"
+    xmlresponse = utils.rest_post_xml(baseURL, uri, newxmlbody, epnmuser, epnmpassword)
+
+    # print xmlresponse
+    try:
+        thexml = xml.dom.minidom.parseString(xmlresponse)
+    except xml.parsers.expat.ExpatError as err:
+        logging.info("XML parsing error.  The received message from websocket is not XML.")
+        return
+    except Exception as err:
+        logging.warning(xmlresponse)
+        logging.warning("Operation failed.")
+        return
+    try:
+        result = thexml.getElementsByTagName("ns34:status")[0].firstChild.nodeValue
+        fdn = thexml.getElementsByTagName("ns34:fdn")[0].firstChild.nodeValue
+        logging.info(fdn)
+        logging.info(result)
+        return result
+    except:
+        logging.warning("Error parsing response for update SRRG!")
+        logging.warning(xmlresponse)
+        return
 
 def createSRRG(baseURL, epnmuser, epnmpassword, usrlabel, description, respool, rsfdn):
     with open("collectioncode/create-srrg.xml", 'r') as f:

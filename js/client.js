@@ -638,12 +638,24 @@ var client = {
             $(node_a).appendTo(row);
             $(node_b).appendTo(row);
             $(fdn).appendTo(row);
-            try {
-                var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
-                var srrg_lc_url = '<td><a href="'+origin+'/srlg/'+srrg_lc+'" name = "'+srrg_lc+'">'+srrg_lc+'</a></td>';
-                $(srrg_lc_url).appendTo(row);
+//            try {
+//                var srrg_lc = v1['srrgs-lc'][0].split('=')[2];
+//                var srrg_lc_url = '<td><a href="'+origin+'/srlg/'+srrg_lc+'" name = "'+srrg_lc+'">'+srrg_lc+'</a></td>';
+//                $(srrg_lc_url).appendTo(row);
+//            }
+//            catch {
+//                $('<td></td>').appendTo(row);
+//            }
+            var parsed_url_list = [];
+            $.each(v1['srrgs-lc'], function(k2,v2) {
+                var parsed = v2.split('=')[2];
+                parsed_url_list += '<a href="'+origin+'/srlg/'+parsed+'" name = "'+parsed+'">'+parsed+'</a></br>';
+            });
+            if (parsed_url_list.length > 0) {
+                var parsed_url = "<td>"+ parsed_url_list + "</td>";
+                $(parsed_url).appendTo(row);
             }
-            catch {
+            else {
                 $('<td></td>').appendTo(row);
             }
             parsed_url_list = [];

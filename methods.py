@@ -127,6 +127,30 @@ def gettopolinks_mpls_node(node_name):
         return json.dumps(node_topo_links)
 
 
+def get_lc_srrgs(fdn):
+    with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
+        topo_links = json.load(f)
+        f.close()
+    srrgs = []
+    for key1, val1 in topo_links.items():
+        if val1['fdn'] ==  fdn:
+            for srrg in val1['srrgs-lc']:
+                srrgs.append(srrg)
+    return srrgs
+
+
+def get_ad_srrgs(fdn):
+    with open("jsonfiles/topolinks_add_drop_db.json", 'r', encoding="utf8") as f:
+        topo_links = json.load(f)
+        f.close()
+    srrgs = []
+    for key1, val1 in topo_links.items():
+        if val1['fdn'] ==  fdn:
+            for srrg in val1['srrgs-ad']:
+                srrgs.append(srrg)
+    return srrgs
+
+
 def collection(ajax_handler, request, global_region, baseURL, epnmuser, epnmpassword):
     try:
         srlg_only = request['srlg-only']
@@ -164,10 +188,28 @@ def assign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmpas
         fdn_list = request['fdns']
         srrg_type = request['type']
         result = 'unknown'
-        if srrg_type == "conduit" or srrg_type == 'add-drop':
+        if srrg_type == "conduit":
             request_uuid = str(uuid.uuid4()).replace("-", "")
             result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
                                                fdn_list)
+        elif srrg_type == 'add-drop':
+            tmp_srrgs = []
+            fdns_to_assign_existing = []
+            for tmp_fdn in fdn_list:
+                fdn_assigned_srrgs = get_ad_srrgs(tmp_fdn)
+                if len(fdn_assigned_srrgs) == 0:
+                    fdns_to_assign_existing.append(tmp_fdn)
+                else:
+                    for tmp_srrg in fdn_assigned_srrgs:
+                        tmp_srrgs.append(tmp_srrg)
+            if len(tmp_srrgs) == 0:
+                request_uuid = str(uuid.uuid4()).replace("-", "")
+                result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
+                                                   fdn_list)
+            else:
+                srrg_fdn = tmp_srrgs[0]
+                result = process_srrgs.assign_existing_srrg(baseURL,epnmuser,epnmpassword,srrg_fdn,fdns_to_assign_existing)
+
         elif srrg_type == "degree" or srrg_type == "l1node":
             for fdn in fdn_list:
                 request_uuid = str(uuid.uuid4()).replace("-", "")
@@ -175,18 +217,32 @@ def assign_srrg(ajax_handler, request, global_region, baseURL, epnmuser, epnmpas
                 result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type, request_uuid,
                                                    single_fdn_list)
         elif srrg_type == "line-card":
-            for i in range(0, 9):
-                chassis_num = "Chassis " + str(i)
-                for j in range(0, 16):
-                    slot_num = "Slot " + str(j)
-                    slot_fdns = []
-                    for tmp_fdn in fdn_list:
-                        if slot_num == tmp_fdn['slot'] and chassis_num == tmp_fdn['chassis']:
-                            slot_fdns.append(tmp_fdn['fdn'])
-                    if len(slot_fdns) > 0:
-                        request_uuid = str(uuid.uuid4()).replace("-", "")
-                        result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type,
-                                                           request_uuid, slot_fdns)
+            tmp_srrgs = []
+            fdns_to_assign_existing = []
+            for tmp_fdn in fdn_list:
+                fdn_assigned_srrgs = get_lc_srrgs(tmp_fdn['fdn'])
+                if len(fdn_assigned_srrgs) == 0:
+                    fdns_to_assign_existing.append(tmp_fdn['fdn'])
+                else:
+                    for tmp_srrg in fdn_assigned_srrgs:
+                        tmp_srrgs.append(tmp_srrg)
+            if len(tmp_srrgs) == 0:
+                for i in range(0, 9):
+                    chassis_num = "Chassis " + str(i)
+                    for j in range(0, 16):
+                        slot_num = "Slot " + str(j)
+                        slot_fdns = []
+                        for tmp_fdn in fdn_list:
+                            if slot_num == tmp_fdn['slot'] and chassis_num == tmp_fdn['chassis']:
+                                slot_fdns.append(tmp_fdn['fdn'])
+                        if len(slot_fdns) > 0:
+                            request_uuid = str(uuid.uuid4()).replace("-", "")
+                            result = process_srrgs.assign_srrg(baseURL, epnmuser, epnmpassword, pool_fdn, srrg_type,
+                                                               request_uuid, slot_fdns)
+
+            else:
+                srrg_fdn = tmp_srrgs[0]
+                result = process_srrgs.assign_existing_srrg(baseURL,epnmuser,epnmpassword,srrg_fdn,fdns_to_assign_existing)
 
         if result == 'OPERATION_PARTIAL':
             status = 'partial'
